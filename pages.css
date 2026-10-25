@@ -58,3 +58,7 @@ h2 { margin: 32px 0 8px; font-size: 1.25rem; }
 .release-items li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
 .release-items b { display: block; margin-bottom: 2px; }
 .release-items .credit { display: block; margin-top: 6px; font-size: .8125rem; color: var(--muted); }
+.vote-day { display: grid; gap: 4px; margin: 16px 0 8px; padding: 18px; border-radius: 14px; background: #0f766e; color: #fff; }
+.vote-date { font-size: 1.75rem; font-weight: 800; }
+.vote-hours { font-size: 1.0625rem; }
+.vote-count:not(:empty) { margin-top: 6px; font-weight: 600; color: #ccfbf1; }

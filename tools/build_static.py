@@ -101,7 +101,7 @@ GA_SNIPPET = f"""<script async src="https://www.googletagmanager.com/gtag/js?id=
 
 HEADER = """<header class="site-header">
   <a class="brand" href="/">新北政見島</a>
-  <nav><a href="/">3D 地圖</a><a href="/policy/">政見一覽</a><a href="/updates/">更新紀錄</a><a href="/about/">關於本站</a></nav>
+  <nav><a href="/">3D 地圖</a><a href="/policy/">政見一覽</a><a href="/vote/">投票資訊</a><a href="/updates/">更新紀錄</a><a href="/about/">關於本站</a></nav>
   <div class="textsize" role="group" aria-label="字級">
     <span>字級</span><button type="button" data-size-btn="m">標準</button><button type="button" data-size-btn="l">大</button><button type="button" data-size-btn="xl">特大</button>
   </div>
@@ -292,6 +292,37 @@ write("about/", text_page("about/", "關於新北政見島｜資料來源與非�
 written.append("about/")
 
 
+# ---------- voting information ----------
+election = {k: v for k, v in json.loads((ROOT / "tools" / "election.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
+vd = datetime.date.fromisoformat(election["date"])
+vote_body = f"""<h1>投票資訊</h1>
+<p class="lead">{e(election["name"])}</p>
+<div class="vote-day">
+  <span class="vote-date">{vd.month} 月 {vd.day} 日（{e(election["weekday"])}）</span>
+  <span class="vote-hours">{e(election["hours"])}</span>
+  <span class="vote-count" id="vote-count" data-date="{election["date"]}"></span>
+</div>
+<h2>要帶什麼</h2>
+<ul class="points">{''.join(f"<li>{e(x)}</li>" for x in election["bring"])}</ul>
+<h2>在哪裡投票</h2>
+<ul class="points">{''.join(f"<li>{e(x)}</li>" for x in election["notes"])}</ul>
+<div class="actions"><a class="button primary" href="https://web.cec.gov.tw/tpcec" rel="noopener">新北市選舉委員會 ↗</a></div>
+<h2>資料來源</h2>
+<ul class="points">{''.join(f'<li><a href="{e(x["url"])}" rel="noopener">{e(x["title"])}</a></li>' for x in election["sources"])}</ul>
+<p class="note">以上內容整理自中央選舉委員會與新北市選舉委員會公告，若有更新以官方公告為準。</p>
+<script>
+  (() => {{
+    // Whole days left, counted in Taipei time
+    const el = document.getElementById('vote-count');
+    const today = new Intl.DateTimeFormat('sv-SE', {{ timeZone: 'Asia/Taipei' }}).format(new Date());
+    const days = Math.round((Date.parse(el.dataset.date) - Date.parse(today)) / 86400000);
+    el.textContent = days > 0 ? `距離投票還有 ${{days}} 天` : days === 0 ? '今天投票，記得出門！' : '';
+  }})();
+</script>"""
+write("vote/", text_page("vote/", f"投票資訊｜{vd.month}/{vd.day} 新北市長選舉｜新北政見島", f"{election['name']}：{vd.month} 月 {vd.day} 日（{election['weekday']}）{election['hours']}投票，記得攜帶{'、'.join(election['bring'])}。", vote_body, [("投票資訊", None)]))
+written.append("vote/")
+
+
 # ---------- release notes ----------
 releases = json.loads((ROOT / "tools" / "releases.json").read_text(encoding="utf-8"))
 releases.sort(key=lambda r: r["date"], reverse=True)
@@ -457,13 +488,16 @@ district_block = '<script type="application/json" id="district-data">' + json.du
 
 source = fill(source, "jsonld", jsonld_block)
 source = fill(source, "noscript", noscript_block)
+election_block = '<script type="application/json" id="election-data">' + json.dumps({"date": election["date"], "quiet_dates": election["quiet_dates"]}, ensure_ascii=False) + "</script>"
+source = re.sub(r"(<!-- data:election:start -->\n).*?(<!-- data:election:end -->)", lambda m: m.group(1) + election_block + "\n" + m.group(2), source, flags=re.S)
 source = re.sub(r"(<!-- data:release:start -->\n).*?(<!-- data:release:end -->)", lambda m: m.group(1) + release_block + "\n" + m.group(2), source, flags=re.S)
 source = re.sub(r"(<!-- data:districts:start -->\n).*?(<!-- data:districts:end -->)", lambda m: m.group(1) + district_block + "\n" + m.group(2), source, flags=re.S)
 index_path.write_text(source, encoding="utf-8")
 
 
 # ---------- sitemap ----------
-urls = [SITE] + [SITE + p for p in ["policy/", "updates/", "about/"] + [w for w in written if w not in ("policy/", "updates/", "about/")]]
+TOP = ["policy/", "vote/", "updates/", "about/"]
+urls = [SITE] + [SITE + p for p in TOP + [w for w in written if w not in TOP]]
 (ROOT / "sitemap.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)

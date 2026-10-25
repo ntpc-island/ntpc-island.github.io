@@ -1,0 +1,54 @@
+# Rebuild everything generated from the data and the 3D scene (preview images, share pages, text pages,
+# sitemap) whenever the source changes, and commit the result. The commit is made with GITHUB_TOKEN, so it
+# does not trigger this workflow again; GitHub Pages deploys it like any other push.
+name: Build generated files
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - pages.css
+      - tools/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-generated
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the renderer
+        run: |
+          pip install playwright pillow
+          python -m playwright install --with-deps chromium
+
+      # build_static reads the data in index.html; the images come first so the pages can point at them
+      - name: Render preview images
+        run: python tools/build_og_images.py
+
+      - name: Generate pages, share pages and sitemap
+        run: python tools/build_static.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A og og.png hero.jpg share policy spot about updates vote sitemap.xml index.html
+          if git diff --cached --quiet; then
+            echo "Nothing changed"
+          else
+            git commit -m "chore: rebuild generated files"
+            git push
+          fi

@@ -61,3 +61,13 @@ python3 tools/build_og_images.py && python3 tools/build_static.py
 
 最新一筆也會嵌進首頁：之前來過、但還沒看過這次更新的訪客，進站時會看到一行「10/23 更新：…」的提示。
 
+## 自動產生（GitHub Actions）
+
+`.github/workflows/build.yml`：推送到 `main` 且改到 `index.html`、`pages.css` 或 `tools/` 時，會在 GitHub 上用無頭 Chromium 重新產生預覽圖、分享頁、文字頁與 sitemap，有變動就自動 commit。一般改內容只要推上去即可，不必在本機跑工具。
+
+預覽圖在 `?og=` 模式下使用固定亂數、場景靜止，同樣的程式會畫出同樣的圖，所以沒有實際改動時不會產生新的 commit。
+
+## 選舉期間
+
+`tools/election.json` 記錄投票日與資料來源（產生 `/vote/` 投票資訊頁），`quiet_dates` 列出的日期（台北時間）網站會暫停分享按鈕、圖卡與首次提示，只保留閱讀。網址加 `?quiet=1` 可預覽這個模式。
+

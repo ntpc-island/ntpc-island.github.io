@@ -11,7 +11,7 @@
 <meta property="og:locale" content="zh_TW">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="新北政見島">
-<meta property="og:title" content="新北政見島">
+<meta property="og:title" content="新北政見島｜蘇巧慧 14 項政見，一張地圖看懂">
 <meta property="og:description" content="把蘇巧慧 2026 新北市長競選網站的 14 項政見做成 3D 互動島嶼（非官方整理）">
 <meta property="og:url" content="https://ntpc-island.github.io/">
 <meta property="og:image" content="https://ntpc-island.github.io/og.png">
@@ -287,6 +287,17 @@
   .actions { display: flex; gap: 8px; flex: none; }
   #follow-toggle { display: inline-flex; align-items: center; gap: 4px; }
   #menu-toggle, #text-link, #islands-quick { display: none; }
+  .btn-link {
+    display: inline-flex; align-items: center; justify-content: center; pointer-events: auto; padding: 8px 14px;
+    border-radius: 10px; border: 1px solid #0f766e; background: #0f766e; color: #fff; text-decoration: none; font: inherit;
+  }
+  /* Election day: sharing and prompts pause; reading stays available (dates in tools/election.json) */
+  body.quiet #card .share, body.quiet [data-act$="-card"], body.quiet #onboard { display: none !important; }
+  #quiet-note { display: none; }
+  body.quiet #quiet-note {
+    display: block; position: fixed; left: 50%; transform: translateX(-50%); top: 96px; z-index: 6; max-width: calc(100% - 32px);
+    padding: 8px 14px; border-radius: 999px; background: #1f2328; color: #fff; font-size: 13px; text-align: center;
+  }
   #rail { display: none; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .legend button {
@@ -503,7 +514,7 @@
       left: 8px; right: 8px; top: 8px; padding: 8px 8px 12px; background: rgba(255, 253, 248, .97);
       box-shadow: 0 10px 30px rgba(0, 0, 0, .15); pointer-events: auto;
     }
-    header.menu-open .actions { grid-area: actions; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px; }
+    header.menu-open .actions { grid-area: actions; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
     header.menu-open .actions button { padding: 10px; font-size: 15px; justify-content: center; }
     header.menu-open .legend { grid-area: legend; display: flex; flex-wrap: wrap; margin: 4px 0 0; pointer-events: auto; }
     .scrim { height: 96px; }
@@ -594,6 +605,9 @@
 <!-- data:release:start -->
 <script type="application/json" id="release-data">{"date": "2026-10-23", "title": "找到跟你有關的政見"}</script>
 <!-- data:release:end -->
+<!-- data:election:start -->
+<script type="application/json" id="election-data">{"date": "2026-11-28", "quiet_dates": ["2026-11-28"]}</script>
+<!-- data:election:end -->
 <!-- data:districts:start -->
 <script type="application/json" id="district-data">{"板橋": [{"short": "產業升級", "snippets": ["六、板橋浮洲數位軟體新創園區"]}], "新莊": [{"short": "產業升級", "snippets": ["八、加速新莊國影中心二期"]}], "樹林": [{"short": "產業升級", "snippets": ["一、整體開發新北市泰山楓江、樹林大柑園科技園區"]}], "三峽": [{"short": "原住民族", "snippets": ["除了現有溪洲部落、三鶯部落及三峽隆恩埔三處部落聚會所之外，未來將持續選址興建部落聚會所，讓烏來及都市的族人都能擁有維繫情感、交流文化的空間。"]}], "淡水": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。", "參考京都丹後鐵道的經驗，規劃從淡水到萬里的「觀光鐵路」，盡收北海岸風景。"]}, {"short": "產業升級", "snippets": ["針對深坑、九份、淡水等特色商圈導入「一商圈一特色」的空間美學與體驗升級，同時加強步道接駁、商圈硬體美學設計、季季有活動，吸引人潮進入老街商圈。"]}], "汐止": [{"short": "產業升級", "snippets": ["串聯南港國家生技園區的研發能量與汐止生醫產業製造聚落，打造生醫關鍵零組件與精準醫療設備的製造基地 。"]}], "瑞芳": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。"]}, {"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。"]}], "泰山": [{"short": "產業升級", "snippets": ["一、整體開發新北市泰山楓江、樹林大柑園科技園區"]}], "林口": [{"short": "產業升級", "snippets": ["七、林口智慧影視園區"]}], "深坑": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。", "以茶鄉媽祖繞境的路線為軸心（淡蘭南路，涵蓋深坑、石碇、坪林等地區），串聯沿線 250 座土地公廟，推動淡蘭古道土地公廟朝聖之旅。"]}, {"short": "產業升級", "snippets": ["針對深坑、九份、淡水等特色商圈導入「一商圈一特色」的空間美學與體驗升級，同時加強步道接駁、商圈硬體美學設計、季季有活動，吸引人潮進入老街商圈。"]}], "石碇": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。", "以茶鄉媽祖繞境的路線為軸心（淡蘭南路，涵蓋深坑、石碇、坪林等地區），串聯沿線 250 座土地公廟，推動淡蘭古道土地公廟朝聖之旅。"]}], "坪林": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。", "以茶鄉媽祖繞境的路線為軸心（淡蘭南路，涵蓋深坑、石碇、坪林等地區），串聯沿線 250 座土地公廟，推動淡蘭古道土地公廟朝聖之旅。"]}], "三芝": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。", "推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌等計畫。"]}], "石門": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。"]}], "八里": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。", "推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌等計畫。"]}, {"short": "產業升級", "snippets": ["三、八里台北港智慧物流加值園區"]}], "平溪": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。", "在台鐵平溪支線及宜蘭線，開發融入礦業與山林元素的觀光列車，並結合在地農特產（如山藥、段木香菇）推出精緻鐵道便當。"]}], "雙溪": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。", "…運輸、選洗煤等礦業流程及礦工生活聚落，挑選平溪、雙溪具價值的礦業遺構（如復興礦、石底大斜坑、頂雙溪煤礦等）進行復舊，並結合口述史保存、歷史模擬重…"]}], "貢寮": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。"]}, {"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。"]}], "金山": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。", "推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌等計畫。"]}], "萬里": [{"short": "新皇冠海岸", "snippets": ["新北的海岸線旁擁有最璀璨的八顆寶石：八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮，而他們的形狀，串連起來就⼀頂台灣的皇冠。", "推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌等計畫。"]}], "烏來": [{"short": "鑽石山城", "snippets": ["…顆最璀璨的鑽石：步道、鐵道、礦業、茶文化與老街，這些元素交織在瑞芳、貢寮、平溪、雙溪、深坑、石碇、坪林與烏來等區域，構築出新北最深厚的文化底蘊。"]}, {"short": "七大教育", "snippets": ["推動「全國遊學團」計畫，引導都會區學童走入烏來，體驗山林智慧與原住民族文化。"]}, {"short": "原住民族", "snippets": ["除了現有溪洲部落、三鶯部落及三峽隆恩埔三處部落聚會所之外，未來將持續選址興建部落聚會所，讓烏來及都市的族人都能擁有維繫情感、交流文化的空間。", "四、建置烏來公共托育中心"]}]}</script>
 <!-- data:districts:end -->
@@ -681,6 +695,7 @@
     <button id="follow-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="follow-menu" aria-label="追隨"><svg class="gicon cam" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4.5" width="9" height="7" rx="1.5"/><path d="m10.5 7 4-2.2v6.4l-4-2.2"/></svg><span class="txt">追隨</span></button>
     <button id="islands-view" type="button">政見島</button>
     <button id="home" type="button">全景</button>
+    <a id="vote-link" class="btn-link" href="vote/">投票資訊</a>
   </div>
 </header>
 <nav id="rail" aria-label="政見卡片">
@@ -703,6 +718,7 @@
   <p class="index-note"><a href="policy/">文字版政見一覽</a> · <a href="updates/">更新紀錄</a> · <a href="about/">關於本站</a> · 非官方整理，以 <a href="https://chiao.tw/policies" target="_blank" rel="noopener">官方網站</a> 為準 · 本站使用 Google Analytics 統計瀏覽情形</p>
 </aside>
 <div id="toast" role="status" hidden></div>
+<p id="quiet-note">今天是投票日，本站暫停分享功能，記得去投票</p>
 <div id="onboard" role="dialog" aria-modal="true" aria-labelledby="onboard-title" hidden>
   <div class="onboard-box">
     <h2 id="onboard-title">你最關心哪一種？</h2>
@@ -746,6 +762,18 @@
 </article>
 <footer><a href="policy/">政見一覽</a> · <a href="updates/">更新紀錄</a> · <a href="about/">關於本站</a> · 非官方整理 · 內容摘錄自 <a href="https://chiao.tw/policies" target="_blank" rel="noopener">chiao.tw/policies</a>（2026-10-22），以官方網站為準 · 本站使用 Google Analytics 統計瀏覽情形</footer>
 
+<script>
+  // Build renders (?og=...) must be repeatable: seed every random choice (people, winks, scenery) the same way
+  if (new URLSearchParams(location.search).has('og')) {
+    let seed = 20261022;
+    Math.random = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+</script>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -2997,6 +3025,13 @@ function resumeLineShare() {
   }).catch((err) => console.warn('LIFF init failed', err));
 }
 
+// ---------- Election period ----------
+const ELECTION = JSON.parse(document.getElementById('election-data')?.textContent || '{}');
+const taipeiToday = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei' }).format(new Date()); // YYYY-MM-DD
+const quietOverride = new URLSearchParams(location.search).get('quiet'); // ?quiet=1 previews the election-day mode
+const isQuiet = quietOverride === '1' || (quietOverride !== '0' && (ELECTION.quiet_dates ?? []).includes(taipeiToday));
+document.body.classList.toggle('quiet', isQuiet);
+
 // ---------- Analytics (GA4 events; no-ops if the tag is blocked) ----------
 const track = (name, params = {}) => window.gtag?.('event', name, params);
 const currentItem = () => (selected >= 0
@@ -3191,13 +3226,26 @@ function renderFinder() {
   listEl.innerHTML = `<li class="finder-head"><p><b>${district}區</b>：${picks.length
     ? `官方政見有 ${picks.length} 項點名這個區`
     : '官方政見沒有特別點名這個區，多數政見適用全新北市，可以從「身分」找跟你有關的'}</p>
-    <div class="acts"><button type="button" data-act="back">換一個區</button></div></li>` + resultItems(picks, district);
+    <div class="acts"><button type="button" class="primary" data-act="district-card">產生${district}區圖卡</button><button type="button" data-act="back">換一個區</button></div></li>` + resultItems(picks, district);
+}
+
+// Story-sized card for a district: the policies whose official text names it, or, where none does, the
+// citywide care policies (labelled as such, so the card never implies a district-specific promise)
+function makeDistrictCanvas(name) {
+  const named = districtPicks(name);
+  const picks = named.length ? named
+    : POLICIES.flatMap((p, i) => (p.group === 'care' ? [{ i, text: keyPointOf(p) }] : []));
+  return makePersonaCanvas(null, {
+    eyebrow: `住在${name}區`,
+    heading: named.length ? `${name}區的新北政見` : '全市都適用的照顧政見',
+    picks,
+  });
 }
 
 // Story-sized card listing a persona's picks, shared through the same preview dialog as the IG story
-function makePersonaCanvas(key) {
+function makePersonaCanvas(key, custom) {
   const W = 1080, H = 1920, PAD = 90;
-  const p = PERSONAS.find((x) => x.key === key);
+  const p = custom ?? { ...PERSONAS.find((x) => x.key === key), eyebrow: `身為${key}`, heading: '我關心的新北政見' };
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;
@@ -3218,11 +3266,11 @@ function makePersonaCanvas(key) {
   ctx.textAlign = 'left';
   ctx.fillStyle = '#0f766e';
   ctx.font = `700 44px ${STORY_FONT}`;
-  ctx.fillText(`身為${p.key}`, PAD, 220);
+  ctx.fillText(p.eyebrow, PAD, 220);
   ctx.fillStyle = '#1f2328';
   ctx.font = `700 76px ${STORY_FONT}`;
-  ctx.fillText('我關心的新北政見', PAD, 290);
-  // Spread the picks over the space between the heading and the footer
+  ctx.fillText(p.heading, PAD, 290);
+  // Picks start under the heading; with room to spare they move down by a third of it, not to the middle
   const top = 450, bottom = H - 220, gap = 28;
   const blocks = p.picks.map(({ i, text }) => {
     ctx.font = `400 40px ${STORY_FONT}`;
@@ -3230,7 +3278,7 @@ function makePersonaCanvas(key) {
   });
   const heights = blocks.map((b) => 108 + b.lines.length * 56 + 32);
   const total = heights.reduce((a, b) => a + b, 0) + gap * (blocks.length - 1);
-  let y = top + Math.max(0, (bottom - top - total) / 3);
+  let y = top + Math.min(160, Math.max(0, (bottom - top - total) / 3));
   blocks.forEach(({ pol, lines }, k) => {
     if (y + heights[k] > bottom) return;
     ctx.fillStyle = '#ffffff';
@@ -3290,6 +3338,7 @@ listEl.addEventListener('click', (e) => {
     else if (finder.dataset.district) chooseDistrict(finder.dataset.district);
     else if (finder.dataset.act === 'back') clearFinder();
     else if (finder.dataset.act === 'persona-card') openPersonaStory(persona, finder);
+    else if (finder.dataset.act === 'district-card') openDistrictStory(district, finder);
     renderIndex();
     return;
   }
@@ -3323,6 +3372,7 @@ function showFirstHint() {
   } catch {
     // Storage blocked (private mode): treat as a first visit
   }
+  if (isQuiet) return;
   if (!seenHint && !location.hash) {
     showOnboard();
   } else if (!seenHint) {
@@ -3690,6 +3740,11 @@ function openStory(i, opener) {
   showStory(makeStoryCanvas(i), `新北政見島-${POLICIES[i].short}.png`, shareUrl('instagram'), currentItem(), opener);
 }
 
+function openDistrictStory(name, opener) {
+  const link = `${SITE}?utm_source=instagram&utm_medium=social&utm_campaign=district#${encodeURI(`district/${name}`)}`;
+  showStory(makeDistrictCanvas(name), `新北政見島-${name}區的政見.png`, link, { content_type: 'district', item_id: name }, opener);
+}
+
 function openPersonaStory(key, opener) {
   const link = `${SITE}?utm_source=instagram&utm_medium=social&utm_campaign=persona#${encodeURI(`persona/${key}`)}`;
   showStory(makePersonaCanvas(key), `新北政見島-${key}關心的政見.png`, link, { content_type: 'persona', item_id: key }, opener);
@@ -3804,12 +3859,13 @@ function watchPerf(dt) {
 let firstFrame = true;
 // Scenery runs on its own clock, eased to a quarter speed while a card is open so it does not pull attention
 let sceneT = 0, sceneSpeed = 1;
+const frozen = Boolean(new URLSearchParams(location.search).get('og')); // build renders: a still, repeatable scene
 renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  const dt = frozen ? 0 : Math.min(clock.getDelta(), 0.05), t = frozen ? 0 : clock.elapsedTime;
   sceneSpeed += ((card.hidden ? 1 : 0.25) - sceneSpeed) * Math.min(1, dt * 3);
   const sceneDt = dt * sceneSpeed;
   sceneT += sceneDt;
-  if (!reduced) animators.forEach((fn) => fn(sceneT, sceneDt));
+  if (!reduced && !frozen) animators.forEach((fn) => fn(sceneT, sceneDt));
   islands.forEach((g, i) => {
     const u = g.userData;
     const goal = u.liftGoal + ((hovered === i || railFocus === i) && selected !== i ? 0.2 : 0);
@@ -3841,7 +3897,8 @@ renderer.setAnimationLoop(() => {
   if (firstFrame) {
     firstFrame = false;
     document.getElementById('loading').classList.add('done');
-    if (ogParam) setTimeout(renderOgCard, 500); // let the first frames settle before the snapshot
+    if (ogParam === 'hero') window.ogReady = true; // panorama: the build screenshots the scene itself
+    else if (ogParam) setTimeout(renderOgCard, 500); // let the first frames settle before the snapshot
     else if (selected < 0 && selectedSpot < 0) showFirstHint();
   }
 });
