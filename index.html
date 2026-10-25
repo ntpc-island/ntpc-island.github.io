@@ -358,6 +358,7 @@
   }
   #card .share .line { background: #06c755; }
   #card .share .fb { background: #1877f2; }
+  #card .share .threads { background: #101010; }
   /* Label level of detail: hide runner names when zoomed out, shorten island names on narrow screens */
   #labels.far .label.person { display: none; }
   #labels.compact .label:not(.active):not(.spot) .name { display: none; }
@@ -438,6 +439,19 @@
     background: rgba(31, 35, 40, .92); color: #fff; font-size: 14px; line-height: 1.5; text-align: center;
   }
   #toast[hidden] { display: none; }
+  #onboard { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .35); }
+  #onboard[hidden] { display: none; }
+  .onboard-box { width: min(440px, 100%); padding: 20px; border-radius: 18px; background: var(--card); box-shadow: 0 14px 40px rgba(0, 0, 0, .2); }
+  .onboard-box h2 { margin: 0 0 4px; font-size: 20px; }
+  .onboard-box p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .onboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .onboard-grid button { padding: 10px 6px; font-size: 15px; font-weight: 600; text-align: center; }
+  .onboard-grid button small { display: block; margin-top: 2px; font-size: 11px; font-weight: 400; color: var(--muted); }
+  .onboard-box .skip { display: block; width: 100%; margin-top: 12px; border: none; background: none; color: var(--muted); font-size: 14px; }
+  @media (max-width: 640px) {
+    #onboard { align-items: flex-end; padding: 0; }
+    .onboard-box { width: 100%; border-radius: 18px 18px 0 0; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  }
   #toast a { color: #fde68a; font-weight: 600; }
   .noscript { position: relative; z-index: 40; max-width: 720px; margin: 0 auto; padding: 24px 16px; background: var(--bg); line-height: 1.7; }
   #story {
@@ -689,6 +703,14 @@
   <p class="index-note"><a href="policy/">文字版政見一覽</a> · <a href="updates/">更新紀錄</a> · <a href="about/">關於本站</a> · 非官方整理，以 <a href="https://chiao.tw/policies" target="_blank" rel="noopener">官方網站</a> 為準 · 本站使用 Google Analytics 統計瀏覽情形</p>
 </aside>
 <div id="toast" role="status" hidden></div>
+<div id="onboard" role="dialog" aria-modal="true" aria-labelledby="onboard-title" hidden>
+  <div class="onboard-box">
+    <h2 id="onboard-title">你最關心哪一種？</h2>
+    <p>選一個最接近你的身分，馬上標出跟你有關的政見</p>
+    <div class="onboard-grid" id="onboard-grid"></div>
+    <button type="button" class="skip" id="onboard-skip">先自己逛逛</button>
+  </div>
+</div>
 <div id="follow-menu" role="menu" aria-label="選擇要追隨的人物" hidden></div>
 <div id="follow-bar" hidden>
   <button id="follow-prev" type="button" aria-label="上一個人物">‹</button>
@@ -2805,7 +2827,8 @@ addEventListener('keydown', (e) => {
     return;
   }
   if (e.key !== 'Escape') return;
-  if (!storyEl.hidden) closeStory();
+  if (!onboardEl.hidden) closeOnboard();
+  else if (!storyEl.hidden) closeStory();
   else if (!followMenu.hidden) toggleFollowMenu(false);
   else if (!card.hidden) deselect();
   else if (following >= 0) stopFollow();
@@ -2919,6 +2942,9 @@ async function shareToLine(fallbackHref) {
     track('share', { method: 'line', ...item });
     if (!window.open(fallbackHref, '_blank', 'noopener')) location.href = fallbackHref;
   };
+  // Outside LINE the Flex card needs a LINE login first, which most people abandon (GA: 6 visitors from cards vs
+  // 99 from Threads), so the plain link share is the default there. Inside LINE the card needs no login.
+  if (!inLineApp && !inLiffBrowser()) return fallback();
   if (inLineApp && !inLiffBrowser()) {
     location.href = `https://liff.line.me/${LIFF_ID}/?lineShare=${itemKey()}`;
     return;
@@ -2980,7 +3006,11 @@ const currentItem = () => (selected >= 0
 // LINE and Facebook read the Open Graph tags of the share page, so the preview shows this item
 function socialLinks() {
   const line = encodeURIComponent(shareUrl('line')), fb = encodeURIComponent(shareUrl('facebook'));
+  // Threads brings the most visitors; its web intent takes the post text, so the title goes in with the link
+  const title = selected >= 0 ? POLICIES[selected].title : SPOTS[selectedSpot]?.name ?? '新北政見島';
+  const threads = encodeURIComponent(`${title}｜新北政見島\n${shareUrl('threads')}`);
   return `<a class="line" data-share="line" href="https://social-plugins.line.me/lineit/share?url=${line}" target="_blank" rel="noopener" aria-label="分享到 LINE">LINE</a>
+      <a class="threads" data-share="threads" href="https://www.threads.net/intent/post?text=${threads}" target="_blank" rel="noopener" aria-label="分享到 Threads">Threads</a>
       <a class="fb" data-share="facebook" href="https://www.facebook.com/sharer/sharer.php?u=${fb}" target="_blank" rel="noopener" aria-label="分享到 Facebook">Facebook</a>`;
 }
 
@@ -3293,7 +3323,9 @@ function showFirstHint() {
   } catch {
     // Storage blocked (private mode): treat as a first visit
   }
-  if (!seenHint) {
+  if (!seenHint && !location.hash) {
+    showOnboard();
+  } else if (!seenHint) {
     showToast(camera.aspect < 0.8 ? '滑動下方卡片或點島看政見 · 雙指可縮放' : `點島看政見 · ${coarsePointer ? '拖曳旋轉、雙指縮放' : '拖曳旋轉、滾輪縮放'} · ☰ 清單可搜尋`, 6000);
   } else if (latestRelease && seenRelease < latestRelease.date) {
     const [, m, d] = latestRelease.date.split('-').map(Number);
@@ -3304,6 +3336,32 @@ function showFirstHint() {
     toastEl.append(' · ', link);
   }
 }
+
+// First visit without a deep link: most visitors only browsed in order and left after about 30 s, and few found
+// the finder, so ask who they are up front and take them straight to their policies
+const onboardEl = document.getElementById('onboard');
+function showOnboard() {
+  document.getElementById('onboard-grid').innerHTML = PERSONAS.map((p) =>
+    `<button type="button" data-persona="${p.key}">${p.key.replace('上班族與勞工', '上班族')}<small>${p.desc.split('、')[0]}</small></button>`).join('');
+  onboardEl.hidden = false;
+  onboardEl.querySelector('button').focus();
+  track('onboard_show');
+}
+function closeOnboard(hint = true) {
+  onboardEl.hidden = true;
+  if (hint) showToast(camera.aspect < 0.8 ? '滑動下方卡片或點島看政見 · 雙指可縮放' : '點島看政見 · ☰ 清單可搜尋', 6000);
+}
+onboardEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-persona]');
+  if (b) {
+    closeOnboard(false);
+    track('onboard_persona', { persona: b.dataset.persona });
+    openFinder('persona', b.dataset.persona);
+  } else if (e.target.closest('#onboard-skip') || e.target === onboardEl) {
+    track('onboard_skip');
+    closeOnboard();
+  }
+});
 
 function copyLink(btn) {
   track('share', { method: 'copy_link', ...currentItem() });
@@ -3775,7 +3833,7 @@ renderer.setAnimationLoop(() => {
   labelsEl.classList.toggle('compact', camera.aspect < 0.8 && viewDist > 75);
   labelsEl.classList.toggle('spot-dots', camera.aspect < 0.8 && viewDist > 30);
   // The rail steps aside for the card, the index panel, the follow bar and the open menu
-  document.body.classList.toggle('rail-off', !card.hidden || !indexEl.hidden || following >= 0 || headerEl.classList.contains('menu-open'));
+  document.body.classList.toggle('rail-off', !card.hidden || !indexEl.hidden || following >= 0 || headerEl.classList.contains('menu-open') || !onboardEl.hidden);
   renderer.render(scene, camera);
   updateLabels();
   updatePersonLabels();
