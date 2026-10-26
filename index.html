@@ -450,6 +450,47 @@
     background: rgba(31, 35, 40, .92); color: #fff; font-size: 14px; line-height: 1.5; text-align: center;
   }
   #toast[hidden] { display: none; }
+  #toast button { margin-left: 8px; padding: 2px 10px; border-radius: 999px; border: none; background: #fde68a; color: #1f2328; font-size: 13px; font-weight: 600; }
+  /* Visited islands: a small check in front of the number */
+  .label.seen .n::before { content: "✓"; margin-right: 3px; color: #2f855a; }
+  .rail-track button.seen .t .n::before { content: "✓"; margin-right: 3px; color: #2f855a; }
+  .rail-head .prog { font-size: 12px; color: var(--muted); }
+  .rail-head button { padding: 4px 10px; font-size: 12px; border-radius: 999px; background: var(--ink); color: #fff; border-color: var(--ink); }
+  .legend .progress-chip { color: #2f6b4f; background: #eef3f0; border-color: #d5e2da; font-weight: 600; }
+  /* Guided tour caption */
+  #tour {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 7;
+    width: min(460px, calc(100% - 24px)); padding: 14px 16px; border-radius: 16px; background: var(--card);
+    border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+  }
+  #tour[hidden] { display: none; }
+  #tour .step { font-size: 12px; color: var(--muted); }
+  #tour h3 { margin: 2px 0 4px; font-size: 18px; }
+  #tour p { margin: 0 0 10px; font-size: 15px; line-height: 1.5; }
+  #tour .bar { height: 3px; border-radius: 3px; background: #eee6d8; overflow: hidden; margin-bottom: 10px; }
+  #tour .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+  #tour .acts { display: flex; gap: 8px; }
+  #tour .acts button { flex: 1; padding: 8px; font-size: 14px; }
+  #tour .acts .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* Quiz */
+  #quiz { position: fixed; inset: 0; z-index: 22; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .4); }
+  #quiz[hidden] { display: none; }
+  .quiz-box { position: relative; width: min(440px, 100%); max-height: 100%; overflow: auto; padding: 20px; border-radius: 18px; background: var(--card); }
+  .quiz-box .close { position: absolute; top: 8px; right: 8px; border: none; background: none; font-size: 22px; padding: 4px 10px; }
+  .quiz-box .step { font-size: 12px; color: var(--muted); }
+  .quiz-box h3 { margin: 4px 32px 14px 0; font-size: 19px; line-height: 1.45; }
+  .quiz-box .choices { display: grid; gap: 8px; }
+  .quiz-box .choices button { padding: 12px; font-size: 16px; text-align: left; }
+  .quiz-box .choices .right { background: #e6f4ea; border-color: #2f855a; }
+  .quiz-box .choices .wrong { background: #fdecea; border-color: #c53030; }
+  .quiz-box .why { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #f6f1e7; font-size: 14px; line-height: 1.55; }
+  .quiz-box .acts { display: flex; gap: 8px; margin-top: 14px; }
+  .quiz-box .acts button { flex: 1; padding: 10px; }
+  .quiz-box .acts .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .quiz-box .score { font-size: 40px; font-weight: 800; margin: 6px 0; }
+  #index-list .mine-progress { height: 8px; border-radius: 8px; background: #eee6d8; overflow: hidden; margin: 6px 0 10px; }
+  #index-list .mine-progress i { display: block; height: 100%; background: #2f855a; }
+  #index-list .mine-sub { padding: 10px 8px 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
   #onboard { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .35); }
   #onboard[hidden] { display: none; }
   .onboard-box { width: min(440px, 100%); padding: 20px; border-radius: 18px; background: var(--card); box-shadow: 0 14px 40px rgba(0, 0, 0, .2); }
@@ -548,6 +589,8 @@
     .rail-track .finder { background: #0f766e; color: #fff; border-color: #0f766e; }
     .rail-track .finder .k { color: #d5f3ee; }
     body:not(.rail-off) #toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
+    body.touring #toast { bottom: calc(190px + env(safe-area-inset-bottom)); }
+    #tour { bottom: calc(12px + env(safe-area-inset-bottom)); }
     /* Zoomed out on a phone, landmarks shrink to a dot so the policy islands stay the focus */
     #labels.spot-dots .label.spot { padding: 3px 6px; font-size: 10px; }
     #labels.spot-dots .label.spot .name { display: none; }
@@ -603,7 +646,7 @@
   }, 20000);
 </script>
 <!-- data:release:start -->
-<script type="application/json" id="release-data">{"date": "2026-10-25", "title": "更好分享，也別忘了投票"}</script>
+<script type="application/json" id="release-data">{"date": "2026-10-26", "title": "更好逛，也記得你看過什麼"}</script>
 <!-- data:release:end -->
 <!-- data:election:start -->
 <script type="application/json" id="election-data">{"date": "2026-11-28", "quiet_dates": ["2026-11-28"]}</script>
@@ -693,13 +736,14 @@
   <div class="actions" id="header-actions">
     <button id="index-toggle" type="button" aria-expanded="false" aria-controls="index">☰ 清單</button>
     <button id="follow-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="follow-menu" aria-label="追隨"><svg class="gicon cam" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4.5" width="9" height="7" rx="1.5"/><path d="m10.5 7 4-2.2v6.4l-4-2.2"/></svg><span class="txt">追隨</span></button>
+    <button id="tour-start" type="button">▶ 帶我逛一圈</button>
     <button id="islands-view" type="button">政見島</button>
     <button id="home" type="button">全景</button>
     <a id="vote-link" class="btn-link" href="vote/">投票資訊</a>
   </div>
 </header>
 <nav id="rail" aria-label="政見卡片">
-  <div class="rail-head"><b>14 項政見</b><span>左右滑動，點卡片看內容</span></div>
+  <div class="rail-head"><b>14 項政見 <span class="prog" id="rail-progress"></span></b><button type="button" id="tour-start-rail">▶ 帶我逛一圈</button></div>
   <div class="rail-track" id="rail-track"></div>
 </nav>
 <aside id="index" hidden aria-label="政見與景點清單">
@@ -712,12 +756,30 @@
     <button id="tab-spots" type="button" role="tab" aria-selected="false">景點 <span></span></button>
     <button id="tab-persona" type="button" role="tab" aria-selected="false">身分</button>
     <button id="tab-district" type="button" role="tab" aria-selected="false">地區</button>
+    <button id="tab-mine" type="button" role="tab" aria-selected="false">我的</button>
   </div>
   <ul id="index-list"></ul>
   <p id="index-empty" hidden>找不到符合的項目</p>
   <p class="index-note"><a href="policy/">文字版政見一覽</a> · <a href="updates/">更新紀錄</a> · <a href="about/">關於本站</a> · 非官方整理，以 <a href="https://chiao.tw/policies" target="_blank" rel="noopener">官方網站</a> 為準 · 本站使用 Google Analytics 統計瀏覽情形</p>
 </aside>
 <div id="toast" role="status" hidden></div>
+<section id="tour" hidden aria-live="polite" aria-label="導覽">
+  <div class="step" id="tour-step"></div>
+  <h3 id="tour-title"></h3>
+  <p id="tour-text"></p>
+  <div class="bar"><i id="tour-bar"></i></div>
+  <div class="acts">
+    <button type="button" id="tour-pause">暫停</button>
+    <button type="button" class="primary" id="tour-open">看詳細</button>
+    <button type="button" id="tour-end">結束</button>
+  </div>
+</section>
+<div id="quiz" role="dialog" aria-modal="true" aria-label="政見小測驗" hidden>
+  <div class="quiz-box">
+    <button class="close" id="quiz-close" type="button" aria-label="關閉">×</button>
+    <div id="quiz-body"></div>
+  </div>
+</div>
 <p id="quiet-note">今天是投票日，本站暫停分享功能，記得去投票</p>
 <div id="onboard" role="dialog" aria-modal="true" aria-labelledby="onboard-title" hidden>
   <div class="onboard-box">
@@ -1138,7 +1200,11 @@ const BUILDERS = {
     g.add(mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.2, 12), '#e5484d', 0.5, 0.75, 0.9));
     const light = mesh(new THREE.SphereGeometry(0.13, 12, 8), '#ffd166', 0.5, 1.4, 0.9, { emissive: '#ffb703', emissiveIntensity: 0.8 });
     g.add(light);
-    animators.push((t) => { light.material.emissiveIntensity = 0.5 + Math.sin(t * 2.5) * 0.4; });
+    animators.push((t) => {
+      // Easter egg: the lamp flares when the island is opened
+      const egg = performance.now() / 1000 - (g.userData.eggAt ?? -99);
+      light.material.emissiveIntensity = 0.5 + Math.sin(t * 2.5) * 0.4 + (egg < 2 ? 2.5 * (1 - egg / 2) : 0);
+    });
     const boat = new THREE.Group();
     boat.add(mesh(rbox(0.7, 0.16, 0.28, 0.06), c, 0, 0.1, 0));
     boat.add(mesh(new THREE.ConeGeometry(0.2, 0.55, 3), '#ffffff', 0.05, 0.45, 0));
@@ -1568,6 +1634,9 @@ const BUILDERS = {
         legs[1].rotation.x = legs[2].rotation.x = -swing;
         // A swung leg reaches less far down, so the body dips by the same amount to keep the feet on the lawn
         d.position.y = -LEG * (1 - Math.cos(swing));
+        // Easter egg: every dog hops twice when the island is opened
+        const egg = performance.now() / 1000 - (g.userData.eggAt ?? -99);
+        if (egg < 1) d.position.y += Math.max(0, Math.sin(egg * Math.PI * 2)) * 0.1;
         // A wave runs down the bone chain: quick side-to-side wag plus a slow up-and-down breath
         tailBones.forEach((bone, k) => {
           bone.rotation.y = Math.sin(t * 12 - k * 0.5) * 0.1;
@@ -1589,7 +1658,12 @@ const BUILDERS = {
     g.add(mesh(new THREE.ConeGeometry(0.7, 1.15, 6), '#7fb37f', 0.6, 0.575, -0.6));
     const gem = mesh(new THREE.OctahedronGeometry(0.22), c, -0.4, 2.0, -0.5, { emissive: c, emissiveIntensity: 0.35, metalness: 0.3, roughness: 0.2 });
     g.add(gem);
-    animators.push((t) => { gem.rotation.y = t * 1.2; gem.position.y = 2.0 + Math.sin(t * 1.5) * 0.08; });
+    animators.push((t) => {
+      // Easter egg: the diamond spins three quick turns when the island is opened, then carries on as before
+      const egg = Math.min(1.5, performance.now() / 1000 - (g.userData.eggAt ?? -99)) / 1.5;
+      gem.rotation.y = t * 1.2 + (egg >= 0 ? Math.PI * 6 * (1 - (1 - egg) ** 3) : 0);
+      gem.position.y = 2.0 + Math.sin(t * 1.5) * 0.08;
+    });
     g.add(mesh(new THREE.BoxGeometry(1.8, 0.04, 0.16), '#6b7280', 0.1, 0.02, 0.85)); // ends short of the street ring
     const train = new THREE.Group();
     train.add(mesh(rbox(0.5, 0.26, 0.24, 0.05), '#d94f3d', 0, 0.17, 0));
@@ -1763,6 +1837,7 @@ const islands = POLICIES.map((p, i) => {
   content.position.y = H;
   BUILDERS[p.type](content, p, color);
   g.add(content);
+  g.userData.content = content;
 
   const street = new THREE.Group();
   street.position.y = PATH_TOP - PATH_T;
@@ -2492,6 +2567,7 @@ function flyTo(target, offset) {
 }
 controls.addEventListener('start', () => {
   fly = null;
+  if (tour) pauseTour(true); // the visitor took the camera: hold the tour where it is
   followZoom = false; // the person drags: keep following, but stop pulling the camera to the preset distance
 });
 // Phones open on the policy islands; the full panorama stays one tap away in the menu
@@ -2579,6 +2655,7 @@ function applyDim() {
 
 function openCard() {
   stopFollow();
+  if (tour) endTour(false, false); // picking an island ends the tour there
   if (!indexEl.hidden) toggleIndex(false); // never show the card and the index panel together
   if (card.hidden) cardOpener = document.activeElement; // return focus here when the card closes
   card.hidden = false;
@@ -2635,6 +2712,8 @@ function select(i) {
   focusOn(islands[i].position);
   setHash(`policy/${p.short}`, p.short);
   track('view_policy', { policy_name: p.short, policy_group: grp.name });
+  markVisited(i);
+  islands[i].userData.content.userData.eggAt = performance.now() / 1000;
   renderIndex();
 }
 
@@ -2746,6 +2825,190 @@ railTrack.innerHTML = `<button type="button" class="finder" data-finder-card><sp
       <span class="t"><span class="n">${String(i + 1).padStart(2, '0')}</span><span style="color:${readableBg(GROUPS[p.group].color)};display:inline-flex">${groupIcon(p.group)}</span>${p.short}</span>
       <span class="k">${keyPointOf(p)}</span>
     </button>`).join('');
+// ---------- Progress: which policies this visitor has opened (kept only in this browser) ----------
+const loadSet = (key) => {
+  try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch { return new Set(); }
+};
+const saveSet = (key, set) => {
+  try { localStorage.setItem(key, JSON.stringify([...set])); } catch { /* storage blocked */ }
+};
+const visited = loadSet('visited');
+const railProgress = document.getElementById('rail-progress');
+function updateProgress() {
+  labels.forEach((el, k) => el.classList.toggle('seen', visited.has(POLICIES[k].short)));
+  railTrack.querySelectorAll('button[data-i]').forEach((b) => b.classList.toggle('seen', visited.has(POLICIES[Number(b.dataset.i)].short)));
+  railProgress.textContent = `· 已看 ${visited.size}`;
+  const chip = legendEl.querySelector('.progress-chip');
+  if (chip) chip.textContent = `已看 ${visited.size} / ${POLICIES.length}`;
+}
+function markVisited(i) {
+  const name = POLICIES[i].short;
+  if (visited.has(name)) return;
+  visited.add(name);
+  saveSet('visited', visited);
+  updateProgress();
+  if (visited.size === POLICIES.length) {
+    track('visit_all');
+    showToast('你看完 14 項政見了！', 9000);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '產生完成圖卡';
+    btn.addEventListener('click', () => openCompleteStory(btn));
+    toastEl.append(btn);
+  }
+}
+legendEl.insertAdjacentHTML('afterbegin', '<button type="button" class="progress-chip" data-mine></button>');
+legendEl.addEventListener('click', (e) => {
+  if (!e.target.closest('[data-mine]')) return;
+  toggleIndex(true);
+  setTab('mine');
+});
+
+// ---------- Guided tour: fly island to island with each policy's key point ----------
+const TOUR_STAY = 4.5; // seconds per island
+const tourEl = document.getElementById('tour');
+let tour = null; // { i, left, paused }
+function tourShow(i) {
+  const p = POLICIES[i];
+  document.getElementById('tour-step').textContent = `帶你逛一圈 · ${i + 1} / ${POLICIES.length}`;
+  document.getElementById('tour-title').textContent = p.title;
+  document.getElementById('tour-text').textContent = keyPointOf(p);
+  islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
+  labels.forEach((el, k) => el.classList.toggle('active', k === i));
+  const offset = camera.aspect < 0.8 ? new THREE.Vector3(0, 9, 12) : new THREE.Vector3(5, 7, 9);
+  const target = islands[i].position.clone().add(new THREE.Vector3(0, 1, 0));
+  if (camera.aspect < 0.8) target.add(new THREE.Vector3(0, -1.2, 1.2)); // keep the island above the caption
+  flyTo(target, offset);
+  markVisited(i);
+  islands[i].userData.content.userData.eggAt = performance.now() / 1000;
+}
+function startTour(from = 0) {
+  stopFollow();
+  if (!card.hidden) deselect();
+  if (!indexEl.hidden) toggleIndex(false);
+  toggleMenu(false);
+  tour = { i: from, left: TOUR_STAY, paused: false };
+  tourEl.hidden = false;
+  document.body.classList.add('touring');
+  document.getElementById('tour-pause').textContent = '暫停';
+  tourShow(from);
+  track('tour_start');
+}
+function endTour(done = false, flyHome = true) {
+  if (!tour) return;
+  tour = null;
+  tourEl.hidden = true;
+  document.body.classList.remove('touring');
+  islands.forEach((g) => { g.userData.liftGoal = 0; });
+  labels.forEach((el) => el.classList.remove('active'));
+  if (flyHome) flyTo(islandsTarget(), islandsOffset());
+  if (done) {
+    track('tour_complete');
+    showToast('逛完一圈了！點任何一座島可以看詳細內容', 6000);
+  }
+}
+function updateTour(dt) {
+  if (!tour || tour.paused) return;
+  tour.left -= dt;
+  document.getElementById('tour-bar').style.width = `${(1 - tour.left / TOUR_STAY) * 100}%`;
+  if (tour.left > 0) return;
+  if (tour.i + 1 >= POLICIES.length) return endTour(true);
+  tour.i++;
+  tour.left = TOUR_STAY;
+  tourShow(tour.i);
+}
+function pauseTour(paused) {
+  if (!tour) return;
+  tour.paused = paused;
+  document.getElementById('tour-pause').textContent = paused ? '繼續' : '暫停';
+}
+document.getElementById('tour-pause').addEventListener('click', () => pauseTour(!tour?.paused));
+document.getElementById('tour-end').addEventListener('click', () => endTour());
+document.getElementById('tour-open').addEventListener('click', () => {
+  const i = tour?.i;
+  endTour(false, false);
+  if (i !== undefined) select(i);
+});
+document.getElementById('tour-start').addEventListener('click', () => startTour());
+document.getElementById('tour-start-rail').addEventListener('click', () => startTour());
+
+// ---------- Quiz: questions drawn only from the official policy items ----------
+// Each `must` is quoted from that policy's items, so a question disappears if the official text changes
+const QUIZ_LIVE = false; // switch on once the questions are approved; ?quiz=1 previews them
+const quizEnabled = QUIZ_LIVE || new URLSearchParams(location.search).get('quiz') === '1';
+const QUIZ = [
+  { q: '敬老卡每月點數，政見要提高到多少？', choices: ['600 點', '800 點', '1,000 點'], answer: 2, short: '長幼福利', must: '敬老卡提高到每月 1,000 點' },
+  { q: '65 歲以上長輩裝假牙，政見的最高補助是多少？', choices: ['3 萬元', '5 萬元', '8 萬元'], answer: 1, short: '牙齒口腔', must: '65 歲以上長輩裝假牙最高補助 5 萬元' },
+  { q: '兒童免費塗氟，政見要延伸到幾歲？', choices: ['6 歲', '12 歲', '18 歲'], answer: 1, short: '牙齒口腔', must: '免費塗氟從 6 歲延伸到 12 歲' },
+  { q: '青年育兒宅，最長租期可以到幾年？', choices: ['6 年', '12 年', '20 年'], answer: 2, short: '都更住宅', must: '最長租期可達 20 年' },
+  { q: '在中央的 3 次之外，新北要再加碼幾次免費心理諮商？', choices: ['1 次', '3 次', '6 次'], answer: 1, short: '青年支持', must: '新北加碼 3 次免費心理諮商' },
+].flatMap((x) => {
+  const i = POLICIES.findIndex((p) => p.short === x.short);
+  const item = POLICIES[i]?.items.find((t) => t.includes(x.must));
+  if (!item) console.warn(`quiz: ${x.short} no longer says ${x.must}`);
+  return item ? [{ ...x, i, item }] : [];
+});
+const quizEl = document.getElementById('quiz'), quizBody = document.getElementById('quiz-body');
+let quizState = null; // { n, score, answered }
+function renderQuiz() {
+  const { n, score, answered } = quizState;
+  if (n >= QUIZ.length) {
+    quizBody.innerHTML = `<div class="step">政見小測驗</div>
+      <div class="score">${score} / ${QUIZ.length}</div>
+      <p>${score === QUIZ.length ? '全對！你很懂新北政見。' : '每一題的答案都在政見卡片裡，可以再去看看。'}</p>
+      <div class="acts"><button type="button" class="primary" data-q="card">產生成績圖卡</button><button type="button" data-q="again">再玩一次</button></div>`;
+    return;
+  }
+  const x = QUIZ[n];
+  quizBody.innerHTML = `<div class="step">第 ${n + 1} / ${QUIZ.length} 題</div>
+    <h3>${x.q}</h3>
+    <div class="choices">${x.choices.map((c, k) => `<button type="button" data-c="${k}"${answered === null ? ''
+      : ` class="${k === x.answer ? 'right' : k === answered ? 'wrong' : ''}" disabled`}>${c}</button>`).join('')}</div>
+    ${answered === null ? '' : `<p class="why">${answered === x.answer ? '答對了！' : `答案是 ${x.choices[x.answer]}。`}政見原文：「${x.item}」</p>
+      <div class="acts"><button type="button" data-q="policy">看這項政見</button><button type="button" class="primary" data-q="next">${n + 1 < QUIZ.length ? '下一題' : '看結果'}</button></div>`}`;
+}
+function openQuiz() {
+  quizState = { n: 0, score: 0, answered: null };
+  quizEl.hidden = false;
+  renderQuiz();
+  quizBody.querySelector('button')?.focus();
+  track('quiz_start');
+}
+function closeQuiz() { quizEl.hidden = true; }
+quizEl.addEventListener('click', (e) => {
+  if (e.target === quizEl || e.target.closest('#quiz-close')) return closeQuiz();
+  const choice = e.target.closest('[data-c]');
+  if (choice && quizState.answered === null) {
+    quizState.answered = Number(choice.dataset.c);
+    if (quizState.answered === QUIZ[quizState.n].answer) quizState.score++;
+    return renderQuiz();
+  }
+  const act = e.target.closest('[data-q]')?.dataset.q;
+  if (act === 'next') {
+    quizState.n++;
+    quizState.answered = null;
+    if (quizState.n >= QUIZ.length) track('quiz_complete', { score: quizState.score });
+    renderQuiz();
+  } else if (act === 'again') openQuiz();
+  else if (act === 'policy') {
+    const i = QUIZ[quizState.n].i;
+    closeQuiz();
+    select(i);
+  } else if (act === 'card') {
+    const canvas = makePersonaCanvas(null, {
+      eyebrow: '新北政見小測驗',
+      heading: `我答對了 ${quizState.score} / ${QUIZ.length} 題`,
+      picks: QUIZ.map((x) => ({ i: x.i, text: `${x.q} 答案：${x.choices[x.answer]}` })),
+    });
+    showStory(canvas, '新北政見島-政見小測驗.png', `${SITE}?utm_source=instagram&utm_medium=social&utm_campaign=quiz&quiz=1`, { content_type: 'quiz', item_id: String(quizState.score) }, e.target);
+  }
+});
+if (quizEnabled) {
+  railTrack.querySelector('[data-finder-card]').insertAdjacentHTML('afterend',
+    '<button type="button" class="finder" data-quiz-card style="background:#3b77c4;border-color:#3b77c4"><span class="t">？政見小測驗</span><span class="k">5 題，測測你有多懂新北政見</span></button>');
+  railTrack.querySelector('[data-quiz-card]').addEventListener('click', openQuiz);
+}
+
 let railFocus = -1;
 function updateRailFocus() {
   const cards = [...railTrack.querySelectorAll('button[data-i]')];
@@ -2855,7 +3118,9 @@ addEventListener('keydown', (e) => {
     return;
   }
   if (e.key !== 'Escape') return;
-  if (!onboardEl.hidden) closeOnboard();
+  if (!quizEl.hidden) closeQuiz();
+  else if (tour) endTour();
+  else if (!onboardEl.hidden) closeOnboard();
   else if (!storyEl.hidden) closeStory();
   else if (!followMenu.hidden) toggleFollowMenu(false);
   else if (!card.hidden) deselect();
@@ -3085,7 +3350,7 @@ const INDEX = {
 };
 
 function renderIndex() {
-  searchEl.hidden = indexTab === 'persona' || indexTab === 'district';
+  searchEl.hidden = ['persona', 'district', 'mine'].includes(indexTab);
   if (searchEl.hidden) {
     renderFinder();
     return;
@@ -3114,10 +3379,13 @@ function setTab(tab) {
   tabSpots.setAttribute('aria-selected', String(tab === 'spots'));
   tabPersona.setAttribute('aria-selected', String(tab === 'persona'));
   tabDistrict.setAttribute('aria-selected', String(tab === 'district'));
+  tabMine.setAttribute('aria-selected', String(tab === 'mine'));
   renderIndex();
 }
 tabPersona.addEventListener('click', () => setTab('persona'));
 tabDistrict.addEventListener('click', () => setTab('district'));
+const tabMine = document.getElementById('tab-mine');
+tabMine.addEventListener('click', () => setTab('mine'));
 
 // ---------- Finder: policies for who you are, or for where you live ----------
 // Each persona points at the policy item that concerns it; the keyword must appear in that item's text
@@ -3200,8 +3468,30 @@ function resultItems(picks, mark) {
 }
 const highlightText = (text, mark) => (mark ? esc(text).split(esc(mark)).join(`<mark>${esc(mark)}</mark>`) : esc(text));
 
+function renderMine() {
+  const n = visited.size, total = POLICIES.length;
+  const marked = POLICIES.flatMap((p, i) => (importantSet().has(p.short) ? [i] : []));
+  listEl.innerHTML = `<li class="finder-head">
+      <p><b>已看過 ${n} / ${total} 項政見</b></p>
+      <div class="mine-progress"><i style="width:${(n / total) * 100}%"></i></div>
+      <div class="acts">${n === total
+        ? '<button type="button" class="primary" data-act="complete-card">產生完成圖卡</button>'
+        : `<button type="button" class="primary" data-act="tour">帶我逛一圈（還差 ${total - n} 項）</button>`}
+        ${quizEnabled ? '<button type="button" data-act="quiz">政見小測驗</button>' : ''}</div>
+    </li>
+    <li class="mine-sub">我標記為重要的（${marked.length}）</li>`
+    + (marked.length
+      ? resultItems(marked.map((i) => ({ i, text: keyPointOf(POLICIES[i]) })), '')
+        + '<li class="finder-head"><div class="acts"><button type="button" class="primary" data-act="mine-card">產生「我最在意的政見」圖卡</button></div></li>'
+      : '<li class="finder-intro">在政見卡片按「♡ 這對我重要」，就會出現在這裡。</li>');
+}
+
 function renderFinder() {
   emptyEl.hidden = true;
+  if (indexTab === 'mine') {
+    renderMine();
+    return;
+  }
   if (indexTab === 'persona') {
     if (!persona) {
       listEl.innerHTML = '<li class="finder-intro">選一個最接近你的身分，看看哪些政見跟你有關。</li><li class="finder-grid">'
@@ -3339,6 +3629,17 @@ listEl.addEventListener('click', (e) => {
     else if (finder.dataset.act === 'back') clearFinder();
     else if (finder.dataset.act === 'persona-card') openPersonaStory(persona, finder);
     else if (finder.dataset.act === 'district-card') openDistrictStory(district, finder);
+    else if (finder.dataset.act === 'mine-card') openMineStory(finder);
+    else if (finder.dataset.act === 'complete-card') openCompleteStory(finder);
+    else if (finder.dataset.act === 'tour') {
+      toggleIndex(false);
+      startTour();
+      return;
+    } else if (finder.dataset.act === 'quiz') {
+      toggleIndex(false);
+      openQuiz();
+      return;
+    }
     renderIndex();
     return;
   }
@@ -3750,6 +4051,70 @@ function openPersonaStory(key, opener) {
   showStory(makePersonaCanvas(key), `新北政見島-${key}關心的政見.png`, link, { content_type: 'persona', item_id: key }, opener);
 }
 
+function openMineStory(opener) {
+  const marked = POLICIES.flatMap((p, i) => (importantSet().has(p.short) ? [{ i, text: keyPointOf(p) }] : []));
+  const canvas = makePersonaCanvas(null, { eyebrow: '我的新北政見清單', heading: '我最在意的政見', picks: marked.slice(0, 6) });
+  showStory(canvas, '新北政見島-我最在意的政見.png', `${SITE}?utm_source=instagram&utm_medium=social&utm_campaign=mine`, { content_type: 'mine', item_id: String(marked.length) }, opener);
+}
+
+function openCompleteStory(opener) {
+  showStory(makeCompleteCanvas(), '新北政見島-我看完了14項政見.png', `${SITE}?utm_source=instagram&utm_medium=social&utm_campaign=complete`, { content_type: 'complete', item_id: '14' }, opener);
+}
+
+// "I read all 14": every policy as a ticked chip, grouped by category colour
+function makeCompleteCanvas() {
+  const W = 1080, H = 1920, PAD = 90;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#fde8d8');
+  bg.addColorStop(1, '#fffdf8');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#1f2328';
+  ctx.font = `700 40px ${STORY_FONT}`;
+  ctx.fillText('新北政見島', PAD, 90);
+  ctx.fillStyle = '#5b6370';
+  ctx.font = `400 30px ${STORY_FONT}`;
+  ctx.textAlign = 'right';
+  ctx.fillText('非官方整理', W - PAD, 96);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#b8492a';
+  ctx.font = `700 46px ${STORY_FONT}`;
+  ctx.fillText('我看完了', PAD, 230);
+  ctx.fillStyle = '#1f2328';
+  ctx.font = `800 96px ${STORY_FONT}`;
+  ctx.fillText('新北 14 項政見', PAD, 296);
+  const colW = (W - PAD * 2 - 24) / 2;
+  POLICIES.forEach((p, i) => {
+    const x = PAD + (i % 2) * (colW + 24), y = 470 + Math.floor(i / 2) * 150;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(x, y, colW, 124, 24);
+    ctx.fill();
+    ctx.fillStyle = readableBg(GROUPS[p.group].color);
+    ctx.beginPath();
+    ctx.arc(x + 52, y + 62, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `700 30px ${STORY_FONT}`;
+    ctx.textAlign = 'center';
+    ctx.fillText('✓', x + 52, y + 46);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1f2328';
+    ctx.font = `700 40px ${STORY_FONT}`;
+    ctx.fillText(p.short, x + 100, y + 40);
+  });
+  ctx.fillStyle = '#5b6370';
+  ctx.font = `400 28px ${STORY_FONT}`;
+  ctx.fillText('你也來看看：ntpc-island.github.io', PAD, H - 150);
+  ctx.fillText('內容整理自蘇巧慧 2026 競選網站，以官方網站為準', PAD, H - 108);
+  return c;
+}
+
 function closeStory() {
   storyEl.hidden = true;
   storyOpener?.focus();
@@ -3875,6 +4240,12 @@ renderer.setAnimationLoop(() => {
   updateBridges();
   people.forEach((w) => stepPerson(w, reduced ? 0 : sceneDt));
   updateFollow(dt);
+  updateTour(dt);
+  islands.forEach((g) => {
+    // Easter egg for every island: a little squash-and-stretch when it is opened
+    const c = g.userData.content, egg = performance.now() / 1000 - (c.userData.eggAt ?? -99);
+    c.scale.y = !reduced && egg < 1.2 ? 1 + Math.sin(egg * 14) * 0.08 * Math.exp(-egg * 4) : 1;
+  });
   if (fly) {
     const k = Math.min(1, dt * 3);
     controls.target.lerp(fly.target, k);
@@ -3889,7 +4260,7 @@ renderer.setAnimationLoop(() => {
   labelsEl.classList.toggle('compact', camera.aspect < 0.8 && viewDist > 75);
   labelsEl.classList.toggle('spot-dots', camera.aspect < 0.8 && viewDist > 30);
   // The rail steps aside for the card, the index panel, the follow bar and the open menu
-  document.body.classList.toggle('rail-off', !card.hidden || !indexEl.hidden || following >= 0 || headerEl.classList.contains('menu-open') || !onboardEl.hidden);
+  document.body.classList.toggle('rail-off', !card.hidden || !indexEl.hidden || following >= 0 || headerEl.classList.contains('menu-open') || !onboardEl.hidden || tour !== null);
   renderer.render(scene, camera);
   updateLabels();
   updatePersonLabels();
@@ -3903,6 +4274,7 @@ renderer.setAnimationLoop(() => {
   }
 });
 
+updateProgress();
 applyHash();
 applyDim();
 resumeLineShare();
