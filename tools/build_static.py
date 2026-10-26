@@ -43,7 +43,8 @@ def strings(block):
     return re.findall(r"'([^']+)'", block)
 
 
-groups = {k: {"name": n, "color": c} for k, n, c in re.findall(r"(\w+): \{ name: '([^']+)', color: '(#[0-9a-fA-F]+)' \}", source)}
+groups_block = re.search(r"const GROUPS = \{(.*?)\n\};", source, re.S).group(1)
+groups = {k: {"name": n, "color": c} for k, n, c in re.findall(r"(\w+): \{ name: '([^']+)', color: '(#[0-9a-fA-F]+)' \}", groups_block)}
 policies = [
     {"short": m[0], "title": m[1], "slug": m[2], "group": m[3], "summary": m[4], "items": strings(m[5])}
     for m in re.findall(
@@ -488,6 +489,11 @@ district_block = '<script type="application/json" id="district-data">' + json.du
 
 source = fill(source, "jsonld", jsonld_block)
 source = fill(source, "noscript", noscript_block)
+share_copy = {k: v for k, v in json.loads((ROOT / "tools" / "share_copy.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
+missing = [p["short"] for p in policies if p["short"] not in share_copy]
+assert not missing, f"share_copy.json has no text for {missing}"
+share_copy_block = '<script type="application/json" id="share-copy-data">' + json.dumps(share_copy, ensure_ascii=False) + "</script>"
+source = re.sub(r"(<!-- data:sharecopy:start -->\n).*?(<!-- data:sharecopy:end -->)", lambda m: m.group(1) + share_copy_block + "\n" + m.group(2), source, flags=re.S)
 election_block = '<script type="application/json" id="election-data">' + json.dumps({"date": election["date"], "quiet_dates": election["quiet_dates"]}, ensure_ascii=False) + "</script>"
 source = re.sub(r"(<!-- data:election:start -->\n).*?(<!-- data:election:end -->)", lambda m: m.group(1) + election_block + "\n" + m.group(2), source, flags=re.S)
 source = re.sub(r"(<!-- data:release:start -->\n).*?(<!-- data:release:end -->)", lambda m: m.group(1) + release_block + "\n" + m.group(2), source, flags=re.S)
