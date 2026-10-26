@@ -14,6 +14,8 @@
   (written for visitors, newest first); the latest entry is also embedded in
   index.html so returning visitors hear about what is new.
 - sitemap.xml listing every indexable page.
+- llms.txt and llms-full.txt: a map of the site and the full policy text for AI
+  assistants (llmstxt.org format), from the same official text.
 
 Re-run after editing the data in index.html:
 
@@ -135,8 +137,9 @@ FOOTER = f"""<footer class="site-footer">
 </footer>"""
 
 
-def text_page(path, title, description, body, crumbs, og_title=None, image=OG_IMAGE):
-    """crumbs: [(name, path or None)] after 首頁; the last one is the current page."""
+def text_page(path, title, description, body, crumbs, og_title=None, image=OG_IMAGE, page_extra=None, extra_ld=()):
+    """crumbs: [(name, path or None)] after 首頁; the last one is the current page.
+    page_extra: more WebPage fields; extra_ld: more nodes for the page's JSON-LD graph."""
     url = SITE + path
     breadcrumb_ld = {
         "@type": "BreadcrumbList",
@@ -154,8 +157,9 @@ def text_page(path, title, description, body, crumbs, og_title=None, image=OG_IM
         "inLanguage": "zh-TW",
         "dateModified": TODAY,
         "isPartOf": {"@type": "WebSite", "name": "新北政見島", "url": SITE},
+        **(page_extra or {}),
     }
-    ld = json.dumps({"@context": "https://schema.org", "@graph": [page_ld, breadcrumb_ld]}, ensure_ascii=False)
+    ld = json.dumps({"@context": "https://schema.org", "@graph": [page_ld, breadcrumb_ld, *extra_ld]}, ensure_ascii=False)
     crumb_html = " › ".join(
         ['<a href="/">首頁</a>']
         + [f'<a href="/{p}">{e(name)}</a>' if p is not None else e(name) for name, p in crumbs]
@@ -209,11 +213,34 @@ def write(path, content):
     target.write_text(content, encoding="utf-8")
 
 
+# Question-and-answer blocks: the question a visitor would ask an AI assistant, answered in one self-contained
+# paragraph built only from the official text (who, which policy, every item, and the source), so a quoted answer
+# keeps its subject and its source
+CANDIDATE = {"@type": "Person", "name": "蘇巧慧"}
+SOURCE_NOTE = f"（資料來源：蘇巧慧 2026 新北市長競選網站 {SOURCE_URL}，擷取日期 {SOURCE_DATE}）"
+
+
+def policy_answer(p):
+    return f"根據蘇巧慧 2026 新北市長競選網站，「{p['title']}」的方向是：{p['summary']}主要內容有 {len(p['items'])} 項：{'；'.join(p['items'])}。{SOURCE_NOTE}"
+
+
+def faq_html(pairs):
+    return '<h2>常見問題</h2>\n' + "\n".join(f'<h3 class="faq-q">{e(q)}</h3>\n<p class="faq-a">{e(a)}</p>' for q, a in pairs)
+
+
+def faq_ld(pairs):
+    return {
+        "@type": "FAQPage",
+        "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in pairs],
+    }
+
+
 written = []
 for n, p in enumerate(policies):
     grp = groups[p["group"]]
     prev_p, next_p = policies[n - 1], policies[(n + 1) % len(policies)]
     path = page_path("policy", p["short"])
+    faq = [(f"蘇巧慧的「{p['title']}」包含哪些內容？", policy_answer(p))]
     body = f"""<span class="tag" style="background:{readable_bg(grp['color'])}">{e(grp['name'])}</span>
 <h1>{e(p['title'])}</h1>
 <p class="lead">{e(p['summary'])}</p>
@@ -221,6 +248,7 @@ for n, p in enumerate(policies):
 <ul class="points">
 {''.join(f'<li>{e(i)}</li>' for i in p['items'])}
 </ul>
+{faq_html(faq)}
 <div class="actions">
   <a class="button primary" href="{app_link('policy', p['short'])}">在 3D 政見島查看</a>
   <a class="button" href="{official_url(p)}" rel="noopener">閱讀官方完整政見 ↗</a>
@@ -231,7 +259,8 @@ for n, p in enumerate(policies):
 </nav>
 <p class="note">本頁為非官方整理，內容節錄自蘇巧慧 2026 新北市長競選網站（擷取日期 {SOURCE_DATE}），若有出入請以<a href="{official_url(p)}">官方原文</a>為準。</p>"""
     description = summarize(f"{p['summary']}重點：{'；'.join(p['items'])}")
-    write(path, text_page(path, f"{p['title']}｜蘇巧慧 2026 新北市長政見｜新北政見島", description, body, [("政見一覽", "policy/"), (p["short"], None)], og_title=f"{p['title']}｜新北政見島", image=og_image(f"policy-{n + 1:02d}")))
+    write(path, text_page(path, f"{p['title']}｜蘇巧慧 2026 新北市長政見｜新北政見島", description, body, [("政見一覽", "policy/"), (p["short"], None)], og_title=f"{p['title']}｜新北政見島", image=og_image(f"policy-{n + 1:02d}"),
+                           page_extra={"about": CANDIDATE, "isBasedOn": official_url(p)}, extra_ld=[faq_ld(faq)]))
     written.append(path)
 
 for n, s in enumerate(spots):
@@ -260,6 +289,10 @@ spot_items = "\n".join(
     f'<li><a href="/{page_path("spot", s["name"])}"><span class="t">{e(s["name"])}</span><span class="s">{e(s["desc"])}</span></a></li>'
     for s in spots
 )
+overview_faq = [(
+    "蘇巧慧 2026 新北市長有哪些政見？",
+    f"蘇巧慧 2026 新北市長競選網站列出 {len(policies)} 項政見：{'、'.join(p['title'] for p in policies)}。每一項都有重點條列與官方原文連結。{SOURCE_NOTE}",
+)]
 overview_body = f"""<h1>蘇巧慧 2026 新北市長政見一覽</h1>
 <p class="lead">{len(policies)} 項政見的重點整理，每一項都附官方原文連結。想用地圖瀏覽，可以到 <a href="/">3D 政見島</a>。</p>
 <h2>政見</h2>
@@ -269,8 +302,10 @@ overview_body = f"""<h1>蘇巧慧 2026 新北市長政見一覽</h1>
 <h2>新北景點</h2>
 <ul class="list">
 {spot_items}
-</ul>"""
-write("policy/", text_page("policy/", "蘇巧慧 2026 新北市長 14 項政見一覽｜新北政見島", f"蘇巧慧 2026 新北市長 {len(policies)} 項政見重點整理：{'、'.join(p['short'] for p in policies)}。非官方整理，附官方原文連結。", overview_body, [("政見一覽", None)]))
+</ul>
+{faq_html(overview_faq)}"""
+write("policy/", text_page("policy/", "蘇巧慧 2026 新北市長 14 項政見一覽｜新北政見島", f"蘇巧慧 2026 新北市長 {len(policies)} 項政見重點整理：{'、'.join(p['short'] for p in policies)}。非官方整理，附官方原文連結。", overview_body, [("政見一覽", None)],
+                             page_extra={"about": CANDIDATE, "isBasedOn": SOURCE_URL}, extra_ld=[faq_ld(overview_faq)]))
 written.append("policy/")
 
 about_body = f"""<h1>關於新北政見島</h1>
@@ -320,7 +355,21 @@ vote_body = f"""<h1>投票資訊</h1>
     el.textContent = days > 0 ? `距離投票還有 ${{days}} 天` : days === 0 ? '今天投票，記得出門！' : '';
   }})();
 </script>"""
-write("vote/", text_page("vote/", f"投票資訊｜{vd.month}/{vd.day} 新北市長選舉｜新北政見島", f"{election['name']}：{vd.month} 月 {vd.day} 日（{election['weekday']}）{election['hours']}投票，記得攜帶{'、'.join(election['bring'])}。", vote_body, [("投票資訊", None)]))
+# Voting day as a schema.org Event; the hours come from the same CEC wording shown on the page
+am, pm = map(int, re.fullmatch(r"上午 (\d+) 時至下午 (\d+) 時", election["hours"]).groups())
+vote_ld = {
+    "@type": "Event",
+    "name": election["name"],
+    "description": f"投票時間{election['hours']}，攜帶{'、'.join(election['bring'])}。",
+    "startDate": f"{election['date']}T{am:02d}:00:00+08:00",
+    "endDate": f"{election['date']}T{pm + 12:02d}:00:00+08:00",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "location": {"@type": "Place", "name": "新北市各投票所", "address": {"@type": "PostalAddress", "addressRegion": "新北市", "addressCountry": "TW"}},
+    "organizer": {"@type": "GovernmentOrganization", "name": "中央選舉委員會", "url": "https://web.cec.gov.tw/"},
+    "url": SITE + "vote/",
+}
+write("vote/", text_page("vote/", f"投票資訊｜{vd.month}/{vd.day} 新北市長選舉｜新北政見島", f"{election['name']}：{vd.month} 月 {vd.day} 日（{election['weekday']}）{election['hours']}投票，記得攜帶{'、'.join(election['bring'])}。", vote_body, [("投票資訊", None)], extra_ld=[vote_ld]))
 written.append("vote/")
 
 
@@ -499,6 +548,59 @@ source = re.sub(r"(<!-- data:election:start -->\n).*?(<!-- data:election:end -->
 source = re.sub(r"(<!-- data:release:start -->\n).*?(<!-- data:release:end -->)", lambda m: m.group(1) + release_block + "\n" + m.group(2), source, flags=re.S)
 source = re.sub(r"(<!-- data:districts:start -->\n).*?(<!-- data:districts:end -->)", lambda m: m.group(1) + district_block + "\n" + m.group(2), source, flags=re.S)
 index_path.write_text(source, encoding="utf-8")
+
+
+# ---------- llms.txt ----------
+# A plain-text map of the site for AI assistants (llmstxt.org), and llms-full.txt with every policy in full
+DISCLAIMER = f"本站為非官方整理，政見內容節錄自蘇巧慧 2026 新北市長競選網站 {SOURCE_URL}（擷取日期 {SOURCE_DATE}），不加入評論或立場說明；若有出入，以官方網站為準。"
+llms = [
+    "# 新北政見島",
+    "",
+    f"> 蘇巧慧 2026 新北市長競選網站公布的 {len(policies)} 項政見，整理成 3D 互動地圖與文字頁（非官方整理）。",
+    "",
+    DISCLAIMER,
+    "",
+    "## 政見",
+    "",
+    *[f"- [{p['title']}]({SITE + page_path('policy', p['short'])}): {p['summary']}" for p in policies],
+    "",
+    "## 投票資訊",
+    "",
+    f"- [投票資訊]({SITE}vote/): {election['name']}，{vd.month} 月 {vd.day} 日（{election['weekday']}）{election['hours']}；資料來自中央選舉委員會公告",
+    "",
+    "## Optional",
+    "",
+    f"- [政見一覽]({SITE}policy/): {len(policies)} 項政見與 {len(spots)} 個新北景點的清單",
+    f"- [關於本站]({SITE}about/): 資料來源、非官方聲明、隱私與統計",
+    f"- [完整政見文字]({SITE}llms-full.txt): 每一項政見的摘要與所有重點條列",
+]
+(ROOT / "llms.txt").write_text("\n".join(llms) + "\n", encoding="utf-8")
+llms_full = ["# 新北政見島：蘇巧慧 2026 新北市長政見全文整理", "", DISCLAIMER, ""]
+for p in policies:
+    llms_full += [
+        f"## {p['title']}",
+        "",
+        f"分類：{groups[p['group']]['name']}",
+        "",
+        p["summary"],
+        "",
+        *[f"- {item}" for item in p["items"]],
+        "",
+        f"官方原文：{official_url(p)}",
+        f"本站頁面：{SITE + page_path('policy', p['short'])}",
+        "",
+    ]
+llms_full += [
+    "## 投票資訊",
+    "",
+    f"{election['name']}：{vd.month} 月 {vd.day} 日（{election['weekday']}）{election['hours']}。",
+    f"攜帶：{'、'.join(election['bring'])}。",
+    *election["notes"],
+    "",
+    *[f"- {x['title']}：{x['url']}" for x in election["sources"]],
+    "",
+]
+(ROOT / "llms-full.txt").write_text("\n".join(llms_full), encoding="utf-8")
 
 
 # ---------- sitemap ----------

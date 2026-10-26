@@ -1,0 +1,32 @@
+# 新北政見島
+
+> 蘇巧慧 2026 新北市長競選網站公布的 14 項政見，整理成 3D 互動地圖與文字頁（非官方整理）。
+
+本站為非官方整理，政見內容節錄自蘇巧慧 2026 新北市長競選網站 https://chiao.tw/policies（擷取日期 2026-10-22），不加入評論或立場說明；若有出入，以官方網站為準。
+
+## 政見
+
+- [新北觀光政見：新皇冠計畫](https://ntpc-island.github.io/policy/%E6%96%B0%E7%9A%87%E5%86%A0%E6%B5%B7%E5%B2%B8/): 串連八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮八顆海岸寶石，把新北海岸打造成國際觀光品牌。
+- [七大教育政見](https://ntpc-island.github.io/policy/%E4%B8%83%E5%A4%A7%E6%95%99%E8%82%B2/): 做老師、學生與家長的靠山，以市府高度跨界整合資源，打開孩子的想像力。
+- [產業升級四大支柱政見](https://ntpc-island.github.io/policy/%E7%94%A2%E6%A5%AD%E5%8D%87%E7%B4%9A/): 傳產加值、園區開發、商圈創生、AI 政府四大支柱，做新北百工百業的後盾。
+- [勞工政見](https://ntpc-island.github.io/policy/%E5%8B%9E%E5%B7%A5%E6%AC%8A%E7%9B%8A/): 新北有超過 216 萬位勞工，要照顧勞工、照顧職業工會，也照顧每一個勞工家庭。
+- [牙齒口腔保健政見](https://ntpc-island.github.io/policy/%E7%89%99%E9%BD%92%E5%8F%A3%E8%85%94/): 整合醫療網絡，從兒童防蛀到長輩假牙，守護全體市民的口腔健康。
+- [三大照顧寵物政見](https://ntpc-island.github.io/policy/%E6%AF%9B%E5%AD%A9%E7%85%A7%E9%A1%A7/): 照顧毛小孩、做獸醫師後盾，也要升級動物之家、提升認養率。
+- [三大長照政見](https://ntpc-island.github.io/policy/%E4%B8%89%E5%A4%A7%E9%95%B7%E7%85%A7/): 新北 65 歲以上人口突破 82 萬、全台之冠。「照顧他人的人，也需要被照顧」。
+- [新北觀光政見：鑽石山城計畫](https://ntpc-island.github.io/policy/%E9%91%BD%E7%9F%B3%E5%B1%B1%E5%9F%8E/): 以步道、鐵道、礦業、茶文化與老街五顆鑽石，串連瑞芳、平溪、雙溪、深坑、石碇、坪林與烏來。
+- [三大原住民族政見](https://ntpc-island.github.io/policy/%E5%8E%9F%E4%BD%8F%E6%B0%91%E6%97%8F/): 新北原住民族人口六都第二。推動預算翻轉計畫，人均預算加倍，並確保「只增不減」。
+- [四大客家政見](https://ntpc-island.github.io/policy/%E5%9B%9B%E5%A4%A7%E5%AE%A2%E5%AE%B6/): 照顧客家長輩、支持客家青年，結合新科技讓客家文化融入日常。
+- [三大家庭照顧政見](https://ntpc-island.github.io/policy/%E5%AE%B6%E5%BA%AD%E7%85%A7%E9%A1%A7/): 力挺照顧者、育兒全方位、貼心顧長輩，做所有家庭的神隊友。
+- [六大長幼福利政見](https://ntpc-island.github.io/policy/%E9%95%B7%E5%B9%BC%E7%A6%8F%E5%88%A9/): 減輕育兒家庭的支出負擔，鼓勵長輩多出門走走，市府做家庭的後盾。
+- [都更與住宅政見](https://ntpc-island.github.io/policy/%E9%83%BD%E6%9B%B4%E4%BD%8F%E5%AE%85/): 以公共運輸為中心翻新街廓機能，同時保留地方文化與觀光特色。
+- [四大青年支持政見](https://ntpc-island.github.io/policy/%E9%9D%92%E5%B9%B4%E6%94%AF%E6%8C%81/): 從知識、資金、空間到身心，讓每位新北青年都能在城市角落實踐理想。
+
+## 投票資訊
+
+- [投票資訊](https://ntpc-island.github.io/vote/): 115 年地方公職人員選舉（直轄市長、直轄市議員等），11 月 28 日（星期六）上午 8 時至下午 4 時；資料來自中央選舉委員會公告
+
+## Optional
+
+- [政見一覽](https://ntpc-island.github.io/policy/): 14 項政見與 12 個新北景點的清單
+- [關於本站](https://ntpc-island.github.io/about/): 資料來源、非官方聲明、隱私與統計
+- [完整政見文字](https://ntpc-island.github.io/llms-full.txt): 每一項政見的摘要與所有重點條列

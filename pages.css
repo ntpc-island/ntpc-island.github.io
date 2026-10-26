@@ -62,3 +62,5 @@ h2 { margin: 32px 0 8px; font-size: 1.25rem; }
 .vote-date { font-size: 1.75rem; font-weight: 800; }
 .vote-hours { font-size: 1.0625rem; }
 .vote-count:not(:empty) { margin-top: 6px; font-weight: 600; color: #ccfbf1; }
+.faq-q { margin: 16px 0 6px; font-size: 1.05rem; }
+.faq-a { margin: 0; line-height: 1.75; }
