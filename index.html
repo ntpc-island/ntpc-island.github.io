@@ -460,13 +460,19 @@
   /* Guided tour caption */
   #tour {
     position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 7;
-    width: min(460px, calc(100% - 24px)); padding: 14px 16px; border-radius: 16px; background: var(--card);
+    width: min(540px, calc(100% - 24px)); padding: 14px 16px; border-radius: 16px; background: var(--card);
     border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
   }
   #tour[hidden] { display: none; }
-  #tour .step { font-size: 12px; color: var(--muted); }
-  #tour h3 { margin: 2px 0 4px; font-size: 18px; }
-  #tour p { margin: 0 0 10px; font-size: 15px; line-height: 1.5; }
+  #tour .step { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  #tour .tour-tag { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; color: #fff; font-weight: 600; }
+  #tour h3 { margin: 4px 0 4px; font-size: 19px; line-height: 1.35; }
+  #tour .tour-summary { margin: 0 0 8px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+  #tour .tour-key { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: #fff3e6; font-size: 15px; font-weight: 600; line-height: 1.5; }
+  #tour .tour-key::before { content: "重點"; display: block; font-size: 11px; color: #a8401f; }
+  #tour .tour-items { margin: 0 0 10px; padding-left: 18px; font-size: 14px; line-height: 1.5; }
+  #tour .tour-items li + li { margin-top: 3px; }
+  #tour .acts #tour-prev, #tour .acts #tour-next { flex: 0 0 44px; font-size: 18px; }
   #tour .bar { height: 3px; border-radius: 3px; background: #eee6d8; overflow: hidden; margin-bottom: 10px; }
   #tour .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
   #tour .acts { display: flex; gap: 8px; }
@@ -590,7 +596,14 @@
     .rail-track .finder .k { color: #d5f3ee; }
     body:not(.rail-off) #toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
     body.touring #toast { bottom: calc(190px + env(safe-area-inset-bottom)); }
-    #tour { bottom: calc(12px + env(safe-area-inset-bottom)); }
+    #tour { bottom: calc(12px + env(safe-area-inset-bottom)); padding: 12px 14px; max-height: 58%; overflow: auto; }
+    #tour h3 { font-size: 17px; }
+    #tour .tour-summary { font-size: 13px; margin-bottom: 6px; }
+    #tour .tour-key { font-size: 14px; padding: 6px 9px; margin-bottom: 6px; }
+    #tour .tour-items { font-size: 13px; margin-bottom: 8px; }
+    #tour .acts { gap: 6px; }
+    #tour .acts button { padding: 7px 4px; font-size: 13px; }
+    #tour .acts #tour-prev, #tour .acts #tour-next { flex-basis: 36px; }
     /* Zoomed out on a phone, landmarks shrink to a dot so the policy islands stay the focus */
     #labels.spot-dots .label.spot { padding: 3px 6px; font-size: 10px; }
     #labels.spot-dots .label.spot .name { display: none; }
@@ -764,13 +777,17 @@
 </aside>
 <div id="toast" role="status" hidden></div>
 <section id="tour" hidden aria-live="polite" aria-label="導覽">
-  <div class="step" id="tour-step"></div>
+  <div class="step"><span id="tour-step"></span><span id="tour-tag" class="tour-tag"></span></div>
   <h3 id="tour-title"></h3>
-  <p id="tour-text"></p>
+  <p class="tour-summary" id="tour-summary"></p>
+  <p class="tour-key" id="tour-text"></p>
+  <ul class="tour-items" id="tour-items"></ul>
   <div class="bar"><i id="tour-bar"></i></div>
   <div class="acts">
+    <button type="button" id="tour-prev" aria-label="上一座">‹</button>
     <button type="button" id="tour-pause">暫停</button>
     <button type="button" class="primary" id="tour-open">看詳細</button>
+    <button type="button" id="tour-next" aria-label="下一座">›</button>
     <button type="button" id="tour-end">結束</button>
   </div>
 </section>
@@ -2865,19 +2882,30 @@ legendEl.addEventListener('click', (e) => {
 });
 
 // ---------- Guided tour: fly island to island with each policy's key point ----------
-const TOUR_STAY = 4.5; // seconds per island
+// Time on each island follows how much there is to read (about 8 characters a second), within 7–15 s
+const tourStay = (i) => {
+  const p = POLICIES[i], key = keyPointOf(p);
+  const chars = p.summary.length + key.length + p.items.filter((t) => t !== key).slice(0, 3).join('').length;
+  return Math.min(15, Math.max(7, chars / 8));
+};
 const tourEl = document.getElementById('tour');
 let tour = null; // { i, left, paused }
 function tourShow(i) {
   const p = POLICIES[i];
+  const grp = GROUPS[p.group], key = keyPointOf(p);
   document.getElementById('tour-step').textContent = `帶你逛一圈 · ${i + 1} / ${POLICIES.length}`;
+  const tag = document.getElementById('tour-tag');
+  tag.innerHTML = `${groupIcon(p.group)}${grp.name}`;
+  tag.style.background = readableBg(grp.color);
   document.getElementById('tour-title').textContent = p.title;
-  document.getElementById('tour-text').textContent = keyPointOf(p);
+  document.getElementById('tour-summary').textContent = p.summary;
+  document.getElementById('tour-text').textContent = key;
+  document.getElementById('tour-items').innerHTML = p.items.filter((t) => t !== key).slice(0, 3).map((t) => `<li>${esc(t)}</li>`).join('');
   islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
   labels.forEach((el, k) => el.classList.toggle('active', k === i));
   const offset = camera.aspect < 0.8 ? new THREE.Vector3(0, 9, 12) : new THREE.Vector3(5, 7, 9);
   const target = islands[i].position.clone().add(new THREE.Vector3(0, 1, 0));
-  if (camera.aspect < 0.8) target.add(new THREE.Vector3(0, -1.2, 1.2)); // keep the island above the caption
+  if (camera.aspect < 0.8) target.add(new THREE.Vector3(0, -2.4, 2.4)); // the caption takes the lower half on phones
   flyTo(target, offset);
   markVisited(i);
   islands[i].userData.content.userData.eggAt = performance.now() / 1000;
@@ -2887,7 +2915,7 @@ function startTour(from = 0) {
   if (!card.hidden) deselect();
   if (!indexEl.hidden) toggleIndex(false);
   toggleMenu(false);
-  tour = { i: from, left: TOUR_STAY, paused: false };
+  tour = { i: from, left: tourStay(from), paused: false };
   tourEl.hidden = false;
   document.body.classList.add('touring');
   document.getElementById('tour-pause').textContent = '暫停';
@@ -2910,13 +2938,23 @@ function endTour(done = false, flyHome = true) {
 function updateTour(dt) {
   if (!tour || tour.paused) return;
   tour.left -= dt;
-  document.getElementById('tour-bar').style.width = `${(1 - tour.left / TOUR_STAY) * 100}%`;
+  document.getElementById('tour-bar').style.width = `${(1 - tour.left / tourStay(tour.i)) * 100}%`;
   if (tour.left > 0) return;
   if (tour.i + 1 >= POLICIES.length) return endTour(true);
-  tour.i++;
-  tour.left = TOUR_STAY;
+  tourGo(tour.i + 1);
+}
+function tourGo(i) {
+  if (!tour) return;
+  tour.i = Math.max(0, Math.min(POLICIES.length - 1, i));
+  tour.left = tourStay(tour.i);
+  document.getElementById('tour-bar').style.width = '0%';
   tourShow(tour.i);
 }
+document.getElementById('tour-prev').addEventListener('click', () => tourGo(tour.i - 1));
+document.getElementById('tour-next').addEventListener('click', () => {
+  if (tour.i + 1 >= POLICIES.length) endTour(true);
+  else tourGo(tour.i + 1);
+});
 function pauseTour(paused) {
   if (!tour) return;
   tour.paused = paused;
