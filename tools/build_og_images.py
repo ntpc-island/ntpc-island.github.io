@@ -31,9 +31,9 @@ items = [f"policy-{n:02d}" for n in range(1, n_policies + 1)] + [f"spot-{n:02d}"
 # "cover" is the site cover; it is saved as og.png at the root instead of og/cover.png
 items.append("cover")
 
-# The snapshot sits at (56, 56), 518 px square, in makeOgCanvas; keep its middle 3:2 band.
+# The snapshot is a 420 px square at (56, 105) in makeOgCanvas; keep its middle 3:2 band.
 # Flex shows the title and points as text, so the hero carries only the picture.
-CROP_W, CROP_H, CROP_X, CROP_Y = 518, 345, 56, 56 + (518 - 345) // 2
+CROP_W, CROP_H, CROP_X, CROP_Y = 420, 280, 56, 105 + (420 - 280) // 2
 
 handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT))
 handler.log_message = lambda *a, **k: None

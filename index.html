@@ -3888,65 +3888,75 @@ function makeOgCanvas(kind, i) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // 3D snapshot on the left
-  const shot = H - PAD * 2;
+  // 3D snapshot on the left, a little smaller than the card's height so the text column gets the width it needs.
+  // tools/build_og_images.py crops the LINE hero out of this square, so keep the two in step.
+  const shot = 420, shotY = (H - shot) / 2;
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(PAD, PAD, shot, shot, 28);
+  ctx.roundRect(PAD, shotY, shot, shot, 28);
   ctx.clip();
   const subject = isPolicy ? islands[i].position : spots[i].g.position;
-  drawShot(ctx, subject.clone().add(new THREE.Vector3(0, isPolicy ? 0.9 : 0.8, 0)), PAD, PAD, shot, shot);
+  drawShot(ctx, subject.clone().add(new THREE.Vector3(0, isPolicy ? 0.9 : 0.8, 0)), PAD, shotY, shot, shot);
   ctx.restore();
 
-  // Text column on the right. Feeds show this card around 400 px wide (a third of its size), so it carries only
-  // what still reads at that scale: category, title and one key point, all in large type.
-  const x = PAD + shot + 44, w = W - x - PAD;
-  let y = PAD + 2;
+  // Text column on the right. Feeds show this card around 400 px wide (a third of its size), so the type is large
+  // and the bullets are fitted: the key point first, then as many more as still fit at a readable size.
+  const x = PAD + shot + 40, w = W - x - PAD;
+  let y = PAD;
   ctx.textBaseline = 'top';
-  ctx.font = `700 30px ${STORY_FONT}`;
-  const tagW = ctx.measureText(tag).width + 40;
+  ctx.font = `700 28px ${STORY_FONT}`;
+  const tagW = ctx.measureText(tag).width + 36;
   ctx.fillStyle = readableBg(color);
   ctx.beginPath();
-  ctx.roundRect(x, y, tagW, 50, 25);
+  ctx.roundRect(x, y, tagW, 46, 23);
   ctx.fill();
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(tag, x + 20, y + 9);
-  y += 74;
+  ctx.fillText(tag, x + 18, y + 8);
+  y += 64;
 
   ctx.fillStyle = '#1f2328';
   const title = isPolicy ? item.title : item.name;
-  let heading = fitLines(ctx, title, w, 800, [62, 56, 50]);
+  let heading = fitLines(ctx, title, w, 800, [52, 48, 44]);
   // A title like 新北觀光政見：鑽石山城計畫 breaks after the colon rather than mid-name
   const colon = title.indexOf('：');
   if (heading.lines.length > 1 && colon > 0) {
     const parts = [title.slice(0, colon + 1), title.slice(colon + 1)];
-    const size = [62, 56, 50].find((px) => {
+    const size = [52, 48, 44].find((px) => {
       ctx.font = `800 ${px}px ${STORY_FONT}`;
       return parts.every((t) => ctx.measureText(t).width <= w);
     });
     if (size) heading = { lines: parts, size };
   }
   ctx.font = `800 ${heading.size}px ${STORY_FONT}`;
-  y = drawLines(ctx, heading.lines, x, y, Math.round(heading.size * 1.22), 2) + 22;
+  y = drawLines(ctx, heading.lines, x, y, Math.round(heading.size * 1.2), 2) + 18;
 
-  // The key point (or a landmark's description) in a tinted box, as large as the space allows
-  const text = isPolicy ? keyPointOf(item) : item.desc;
-  const room = H - PAD - 64 - y - 32;
-  const size = [40, 36, 32, 28].find((px) => {
-    ctx.font = `700 ${px}px ${STORY_FONT}`;
-    return wrapText(ctx, text, w - 40).length * px * 1.38 <= room;
-  }) ?? 28;
-  ctx.font = `700 ${size}px ${STORY_FONT}`;
-  const lines = wrapText(ctx, text, w - 40);
-  const boxH = Math.min(lines.length, 4) * Math.round(size * 1.38) + 32;
-  ctx.fillStyle = 'rgba(255, 255, 255, .78)';
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, boxH, 20);
-  ctx.fill();
-  ctx.fillStyle = readableBg(color);
-  ctx.fillRect(x, y + 16, 8, boxH - 32);
-  ctx.fillStyle = '#1f2328';
-  drawLines(ctx, lines, x + 28, y + 16, Math.round(size * 1.38), 4);
+  const limit = H - PAD - 64;
+  if (isPolicy) {
+    const key = keyPointOf(item);
+    const points = [key, ...item.items.filter((t) => t !== key)];
+    const layout = (count, px) => {
+      ctx.font = `600 ${px}px ${STORY_FONT}`;
+      const blocks = points.slice(0, count).map((t) => wrapText(ctx, t, w - 30).slice(0, 2));
+      const lineH = Math.round(px * 1.32);
+      return { blocks, px, lineH, height: blocks.reduce((sum, b) => sum + b.length * lineH + 12, 0) };
+    };
+    // Largest size that fits three bullets, else the largest that fits two
+    const pick = [[3, 32], [3, 30], [3, 28], [2, 32], [2, 30], [2, 28]].map(([n, px]) => layout(n, px)).find((l) => y + l.height <= limit)
+      ?? layout(2, 26);
+    ctx.font = `600 ${pick.px}px ${STORY_FONT}`;
+    pick.blocks.forEach((lines, k) => {
+      ctx.fillStyle = readableBg(color);
+      ctx.beginPath();
+      ctx.arc(x + 8, y + pick.lineH / 2, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = k === 0 ? '#1f2328' : '#3d434b';
+      y = drawLines(ctx, lines, x + 30, y, pick.lineH, 2) + 12;
+    });
+  } else {
+    ctx.fillStyle = '#3d434b';
+    ctx.font = `600 30px ${STORY_FONT}`;
+    drawLines(ctx, wrapText(ctx, item.desc, w), x, y, 42, Math.floor((limit - y) / 42));
+  }
 
   ctx.fillStyle = '#1f2328';
   ctx.font = `800 32px ${STORY_FONT}`;
