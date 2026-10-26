@@ -4267,7 +4267,9 @@ function openShareSheet(channel, opener) {
   }[channel] ?? '可以直接修改文字再分享。';
   setTone(defaultTone());
   sheetEl.hidden = false;
-  sheetText.focus({ preventScroll: true });
+  // Focusing the text box would raise the phone keyboard over the sheet; there, start on the send button and
+  // let people tap the text only if they want to edit it
+  (coarsePointer ? document.getElementById('sharesheet-send') : sheetText).focus({ preventScroll: true });
   track('share_copy_view', { method: channel, ...sheet.item });
 }
 function closeShareSheet() {
