@@ -3423,11 +3423,12 @@ if (!new URLSearchParams(location.search).has('og')) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     glow.scale.setScalar(1.8);
     g.add(glow);
-    // Over the open sea, outside the ring of policy islands
-    const [x, z] = toXZ(SEA_FROM + 12 + lrand() * (SEA_TO - SEA_FROM - 24), 12 + lrand() * 7);
+    // Over the open sea north of the ring of policy islands, the part a portrait screen shows above the islands
+    const [x, z] = toXZ(-40 + lrand() * 90, 12 + lrand() * 6);
     const height = 3.5 + lrand() * 4.5;
     g.position.set(x, height, z);
     g.userData = { height, phase: lrand() * Math.PI * 2, newest: k === litCount - 1 };
+    if (camera.aspect < 0.8) g.scale.setScalar(1.7); // phones see the sea from farther away
     scene.add(g);
     lanterns.push(g);
   }
