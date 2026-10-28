@@ -786,7 +786,7 @@
 </div>
 </noscript>
 <!-- seo:noscript:end -->
-<div id="stage" role="img" aria-label="14 座六邊形島嶼環繞台北市，組成新北市的 3D 政見地圖，點選島嶼可查看政見內容"></div>
+<div id="stage" role="img" aria-label="14 座六邊形島嶼拼成一座新北島的 3D 政見地圖，點選島嶼可查看政見內容"></div>
 <div id="labels"></div>
 <div class="scrim" aria-hidden="true"></div>
 <header>
@@ -944,55 +944,57 @@ const GROUPS = {
   culture: { name: '教育與文化', color: '#3a9b6a' },
 };
 
-// cell = axial hex coordinate; the 12-cell ring at distance 2 surrounds Taipei, laid out roughly by New Taipei geography
+// cell = axial hex coordinate (+q east, -r north); one compact island in rows of 2, 3, 4, 3, 2, laid out roughly by
+// New Taipei geography: the coast north, Linkou northwest, Xinzhuang west, Banqiao in the middle, the mountain towns east,
+// Sanxia southwest and Wulai south
 const POLICIES = [
   {
-    short: '新皇冠海岸', title: '新北觀光政見：新皇冠計畫', slug: '新皇冠海岸計畫', group: 'tourism', type: 'coast', cell: [1, -3],
+    short: '新皇冠海岸', title: '新北觀光政見：新皇冠計畫', slug: '新皇冠海岸計畫', group: 'tourism', type: 'coast', cell: [0, -2],
     summary: '串連八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮八顆海岸寶石，把新北海岸打造成國際觀光品牌。',
     items: ['漁港碼頭服務總體檢，設置漁港服務站、全齡無障礙動線', '核四重件碼頭轉型為國際級遊艇與休閒船艇泊區', '自行車道每 5 公里設簡易休息站，景點道路全面劃設人行道', '推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌', '龍洞打造全年潛水基地，台北港興建退役潛艦博物館'],
   },
   {
-    short: '七大教育', title: '七大教育政見', slug: '七大教育政見', group: 'culture', type: 'school', cell: [0, -2],
+    short: '七大教育', title: '七大教育政見', slug: '七大教育政見', group: 'culture', type: 'school', cell: [1, -2],
     summary: '做老師、學生與家長的靠山，以市府高度跨界整合資源，打開孩子的想像力。',
     items: ['推動「全國遊學團」，讓新北山海城鄉成為孩子的教室', '全面導入「技職 AI 賦能」，升級實習工場', '補足專輔人力、強化學生輔導諮商中心，簡化行政程序', '教師節禮金調升至 2,000 元，假日出勤可選加班費或補休', '公立國中小營養午餐免費，加碼補助團膳食安設備'],
   },
   {
-    short: '產業升級', title: '產業升級四大支柱政見', slug: '產業升級四大支柱政見', group: 'work', type: 'factory', cell: [1, -2],
+    short: '產業升級', title: '產業升級四大支柱政見', slug: '產業升級四大支柱政見', group: 'work', type: 'factory', cell: [-1, -1],
     summary: '傳產加值、園區開發、商圈創生、AI 政府四大支柱，做新北百工百業的後盾。',
     items: ['加速工業區立體化更新，設立「新北市工業設計聚落」', '新建新北市國際會展中心，提供產業會展補助', '整體開發泰山楓江、樹林大柑園科技園區，加速淡海科學城', '老街與特色商圈「一商圈一特色」振興計畫', '公私協力興建高效能 AI 算力中心'],
   },
   {
-    short: '勞工權益', title: '勞工政見', slug: '勞工政見', group: 'work', type: 'crane', cell: [2, -2],
+    short: '勞工權益', title: '勞工政見', slug: '勞工政見', group: 'work', type: 'crane', cell: [-2, 0],
     summary: '新北有超過 216 萬位勞工，要照顧勞工、照顧職業工會，也照顧每一個勞工家庭。',
     items: ['調升職災慰問金、勞資爭議涉訟補助金', '退休煤礦工慰問金從每年 2,000 元提高為 6,000 元', '擴大多元職訓，支持中高齡再就業', '改善工會辦公空間，調高職業工會行政事務費', '建立市府與工會對話機制'],
   },
   {
-    short: '牙齒口腔', title: '牙齒口腔保健政見', slug: '牙齒口腔保健政見', group: 'care', type: 'tooth', cell: [2, -1],
+    short: '牙齒口腔', title: '牙齒口腔保健政見', slug: '牙齒口腔保健政見', group: 'care', type: 'tooth', cell: [0, 0],
     summary: '整合醫療網絡，從兒童防蛀到長輩假牙，守護全體市民的口腔健康。',
     items: ['0–6 歲孩童看醫生免門診和住院部分負擔', '免費塗氟從 6 歲延伸到 12 歲', '65 歲以上長輩裝假牙最高補助 5 萬元', '市府投入資源獎勵居家牙醫服務', '嚴格稽查無照牙技師與非法牙材'],
   },
   {
-    short: '毛孩照顧', title: '三大照顧寵物政見', slug: '三大照顧寵物政見', group: 'care', type: 'pets', cell: [2, 0],
+    short: '毛孩照顧', title: '三大照顧寵物政見', slug: '三大照顧寵物政見', group: 'care', type: 'pets', cell: [1, -1],
     summary: '照顧毛小孩、做獸醫師後盾，也要升級動物之家、提升認養率。',
     items: ['擴大疫苗與健檢補助，認養毛孩享終身全額補助', '補貼夜間開診動物醫院，擴大實施寵物長照', '推動友善寵物專車／計程車標章與補貼', '增設寵物公園並強化遮陰防熱設施', '提升動物之家預算，導入行為訓練等專業服務'],
   },
   {
-    short: '三大長照', title: '三大長照政見', slug: '三大長照政見', group: 'care', type: 'clinic', cell: [1, 1],
+    short: '三大長照', title: '三大長照政見', slug: '三大長照政見', group: 'care', type: 'clinic', cell: [0, 1],
     summary: '新北 65 歲以上人口突破 82 萬、全台之冠。「照顧他人的人，也需要被照顧」。',
     items: ['與機構和專業人員一同推動行政減負', '出院後居家服務與輔具一次到位，「先用後審、公辦借調」', '配合長照 3.0 加強醫療與長照銜接，帶入專業復能服務', '發展 AI 智慧照顧，建立以租代買機制降低導入門檻'],
   },
   {
-    short: '鑽石山城', title: '新北觀光政見：鑽石山城計畫', slug: '鑽石山城計畫', group: 'tourism', type: 'mountain', cell: [1, 2],
+    short: '鑽石山城', title: '新北觀光政見：鑽石山城計畫', slug: '鑽石山城計畫', group: 'tourism', type: 'mountain', cell: [1, 0],
     summary: '以步道、鐵道、礦業、茶文化與老街五顆鑽石，串連瑞芳、平溪、雙溪、深坑、石碇、坪林與烏來。',
     items: ['縫合五大山系與海岸線步道，建構「新北大縱走」', '推廣「淡蘭土地公」朝聖文化，開發專屬御朱印帳', '與台鐵合作開發觀光列車，打造特色車站', '推動金九台車復駛，重現百年礦業遺產'],
   },
   {
-    short: '原住民族', title: '三大原住民族政見', slug: '三大原住民族政見', group: 'culture', type: 'tribe', cell: [0, 2],
+    short: '原住民族', title: '三大原住民族政見', slug: '三大原住民族政見', group: 'culture', type: 'tribe', cell: [-1, 2],
     summary: '新北原住民族人口六都第二。推動預算翻轉計畫，人均預算加倍，並確保「只增不減」。',
     items: ['原住民族租金補貼，持續興建部落聚會所', '55 歲以上族人假牙補助最高 5 萬元', '建置烏來公共托育中心', '提高原住民族社團補助，擴大返鄉祭儀交通費補助', '成立新北市原住民族青年團，新增頭目文化傳承事務費'],
   },
   {
-    short: '四大客家', title: '四大客家政見', slug: '四大客家政見', group: 'culture', type: 'hakka', cell: [-1, 2],
+    short: '四大客家', title: '四大客家政見', slug: '四大客家政見', group: 'culture', type: 'hakka', cell: [-2, 1],
     summary: '照顧客家長輩、支持客家青年，結合新科技讓客家文化融入日常。',
     items: ['客語及技藝課程推廣到校園與社區', '盤點低利用公有空間，增加客家青年新創孵育基地', '建立客家文化 AI 資料庫與 AI 客語教學平台', '放寬設置伯公照護站，照顧都會客家長輩', '擴大客家幣使用範圍'],
   },
@@ -1002,17 +1004,17 @@ const POLICIES = [
     items: ['加發職業照顧者夜間、緊急及困難照顧津貼', '獎勵友善家庭企業最高 100 萬', '企業組隊設置托育首三年虧損補助 50%，開辦夜托、擴大臨托', '打造「95 公分視角」的友善城市', '擴大補助獨居老人智慧救援裝置與失智症 AI 篩檢'],
   },
   {
-    short: '長幼福利', title: '六大長幼福利政見', slug: '六大長幼福利政見', group: 'care', type: 'house', roof: '#f2a65a', cell: [-2, 1],
+    short: '長幼福利', title: '六大長幼福利政見', slug: '六大長幼福利政見', group: 'care', type: 'house', roof: '#f2a65a', cell: [-1, 1],
     summary: '減輕育兒家庭的支出負擔，鼓勵長輩多出門走走，市府做家庭的後盾。',
     items: ['公立國中小學童營養午餐全面免費、提升品質', '0–6 歲孩童看醫生免門診和住院部分負擔', '6 歲以下免費接種腸病毒、輪狀病毒疫苗', '早產兒家庭照顧津貼 3 萬元', '65 歲以上裝假牙最高補助 5 萬元', '敬老卡提高到每月 1,000 點，效期改年度計算'],
   },
   {
-    short: '都更住宅', title: '都更與住宅政見', slug: '都更與住宅政見', group: 'city', type: 'towers', cell: [-2, 0],
+    short: '都更住宅', title: '都更與住宅政見', slug: '都更與住宅政見', group: 'city', type: 'towers', cell: [-1, 0],
     summary: '以公共運輸為中心翻新街廓機能，同時保留地方文化與觀光特色。',
     items: ['成立都市更新局，審議進度透明可查詢', '以捷運、鐵路、輕軌與轉運站為中心更新街廓機能', '配合歷史建築或觀光老街，營造特色街景', '推動青年育兒宅，最長租期可達 20 年', '補助包租代管優先租給長者，推動學生包租代管'],
   },
   {
-    short: '青年支持', title: '四大青年支持政見', slug: '四大青年支持政見', group: 'work', type: 'towers', glass: true, cell: [-1, -1],
+    short: '青年支持', title: '四大青年支持政見', slug: '四大青年支持政見', group: 'work', type: 'towers', glass: true, cell: [0, -1],
     summary: '從知識、資金、空間到身心，讓每位新北青年都能在城市角落實踐理想。',
     items: ['微型創業一條龍加速器、職涯導師制', '青農創業貸款免息額度提高（一般青農 200 萬→500 萬）', '技術士證照獎勵金翻倍', '活化閒置空間為青創基地，定期舉辦青年黑客松', '心理健康「3+3」，新北加碼 3 次免費心理諮商'],
   },
@@ -1820,7 +1822,8 @@ const BUILDERS = {
 await yieldToBrowser();
 
 // ---------- Islands ----------
-const R = 2.2, H = 0.7, GAP = 1.13;
+const R = 2.6, H = 0.7, GAP = 1.13;
+const CONTENT_SCALE = R / 2.2; // the island builders are drawn for R = 2.2; larger islands scale them up
 
 // Street ring along each island rim, centred on the people's walk graph. From the rim inward: sidewalk (runners),
 // bike lane (riders), then a one-way road (cars). LANES are perpendicular offsets from the ring's centre line.
@@ -1867,16 +1870,8 @@ function alongEdges(off, step, make) {
 const roadDashGeo = alongEdges(LANES.road.off, 0.2, () => new THREE.BoxGeometry(0.014, PATH_T + 0.001, 0.09).translate(0, (PATH_T + 0.001) / 2, 0));
 const pavingGeo = alongEdges(LANES.sidewalk.off, 0.13, () => new THREE.BoxGeometry(LANES.sidewalk.w * 0.98, PATH_T + 0.0125, 0.006).translate(0, (PATH_T + 0.0125) / 2, 0));
 const STREET_COLORS = { sidewalk: '#e7dfcf', curb: '#b9b2a4', bike: '#5aa874', road: '#4a4e55' };
-const hexToWorld = (q, r) => [R * GAP * Math.sqrt(3) * (q + r / 2), R * GAP * 1.5 * r];
-
-// Taipei: a flat, non-interactive plateau in the middle of the ring
-[[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]].forEach(([q, r]) => {
-  const [x, z] = hexToWorld(q, r);
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(R, R, 0.12, 6), mat('#e4ded2'));
-  m.position.set(x, -0.25, z);
-  m.receiveShadow = true;
-  scene.add(m);
-});
+// Rows of 2, 3, 4, 3, 2 islands; the half-cell shift centres the four-island middle row on x = 0
+const hexToWorld = (q, r) => [R * GAP * Math.sqrt(3) * (q + r / 2 + 0.5), R * GAP * 1.5 * r];
 
 // One small car per island drives its road loop; body, windows and wheels share geometry across all cars
 const CAR_COLORS = ['#e5484d', '#3f7fd0', '#f2a03d', '#f4f1e8', '#3a9b6a', '#7b5cc4', '#2b2f36'];
@@ -1926,6 +1921,7 @@ const islands = POLICIES.map((p, i) => {
 
   const content = new THREE.Group();
   content.position.y = H;
+  content.scale.setScalar(CONTENT_SCALE);
   BUILDERS[p.type](content, p, color);
   g.add(content);
   g.userData.content = content;
@@ -2009,21 +2005,15 @@ const labels = POLICIES.map((p, i) => {
   labelsEl.appendChild(el);
   return el;
 });
-const taipeiLabel = document.createElement('div');
-taipeiLabel.className = 'label ghost';
-taipeiLabel.textContent = '台北市';
-labelsEl.appendChild(taipeiLabel);
-const TAIPEI_POS = new THREE.Vector3(0, 0.3, 0.6);
 
 const labelPos = new THREE.Vector3();
 function updateLabels() {
   islands.forEach((g, i) => {
-    placeLabel(labels[i], labelPos.set(g.position.x, g.position.y + 2.4, g.position.z));
+    placeLabel(labels[i], labelPos.set(g.position.x, g.position.y + 2.7, g.position.z));
     // Where the label would be with the island at rest: steady input for declutterLabels
-    tmp.set(g.position.x, 2.4, g.position.z).project(camera);
+    tmp.set(g.position.x, 2.7, g.position.z).project(camera);
     labels[i].rest = { x: (tmp.x * 0.5 + 0.5) * innerWidth, y: (-tmp.y * 0.5 + 0.5) * innerHeight, depth: tmp.z };
   });
-  placeLabel(taipeiLabel, TAIPEI_POS);
   spots.forEach((s) => placeLabel(s.label, labelPos.set(s.g.position.x, 2.3, s.g.position.z)));
   declutterLabels();
 }
@@ -2037,7 +2027,7 @@ legendEl.innerHTML = '<button type="button" class="finder-chip" data-finder>✦ 
 
 await yieldToBrowser();
 
-// ---------- New Taipei landmarks (decorative islets outside the ring) ----------
+// ---------- New Taipei landmarks (decorative islets along the coast) ----------
 function rod(g, a, b, r, color) {
   const m = mesh(new THREE.CylinderGeometry(r, r, a.distanceTo(b), 5), color);
   m.position.lerpVectors(a, b, 0.5);
@@ -2047,7 +2037,7 @@ function rod(g, a, b, r, color) {
 const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const RIVER = '#6fb3d6';
 
-// angle: degrees clockwise from north (-z); each islet is turned so its local +z faces Taipei
+// angle: degrees clockwise from north (-z); each islet is turned so its local +z faces the middle of the map
 const SPOTS = [
   {
     name: '觀音山', map: '觀音山風景區', angle: -80, r: 17.5, ground: '#cfe3b0', turn: Math.PI / 2,
@@ -2088,7 +2078,7 @@ const SPOTS = [
     name: '九份老街', map: '九份老街', angle: 58, r: 16, ground: '#cfe3b0',
     desc: '依山而建的山城老街，紅燈籠、茶樓與階梯小巷層層疊疊，可眺望基隆山與東北角海景。',
     build(g) {
-      // Terraces climbing away from Taipei, houses on each step
+      // Terraces climbing away from the middle of the map, houses on each step
       [[0.6, 0.2, 2.2], [0, 0.5, 2], [-0.6, 0.85, 1.6]].forEach(([z, h, w], k) => {
         g.add(mesh(rbox(w, h, 0.6, 0.03), '#b8a98c', 0, h / 2, z));
         const row = new THREE.Group();
@@ -2383,6 +2373,174 @@ animators.push((t, dt) => driftClouds(dt));
 
 await yieldToBrowser();
 
+// ---------- Countryside: the land between the policy islands and the coast ----------
+// Rivers, rice fields, woods and villages fill the plain so the map reads as one New Taipei island. Everything still
+// is merged into one mesh per color; only the circle line train, the wind turbines and the boats move.
+const PLAIN_Y = -1; // top of the land
+const decorGeos = new Map();
+// Some three.js shapes come indexed and some not; mergeGeometries needs them all the same
+const addDecor = (color, geo) => (decorGeos.get(color) ?? decorGeos.set(color, []).get(color)).push(geo.index ? geo.toNonIndexed() : geo);
+const drand = seeded(1121);
+// Clear of the islands (with their bridges), the landmark islets and the circle line
+const islandClear = (x, z, pad) => islands.every((g) => Math.hypot(g.position.x - x, g.position.z - z) > R + pad);
+const spotClear = (x, z, pad) => spots.every((s) => Math.hypot(s.g.position.x - x, s.g.position.z - z) > 2.2 + pad);
+const MRT_R = 13.2;
+const freeAt = (x, z, pad = 0.4) => islandClear(x, z, pad) && spotClear(x, z, pad) && Math.abs(Math.hypot(x, z) - MRT_R) > 0.5 + pad;
+
+// Rivers: Tamsui River to its mouth by the lovers' bridge, Xindian River from Bitan, Dahan River from Sanxia
+function riverGeometry(points, w0, w1) {
+  const curve = new THREE.CatmullRomCurve3(points.map(([deg, r]) => {
+    const [x, z] = toXZ(deg, r);
+    return new THREE.Vector3(x, 0, z);
+  }));
+  const n = 60, pos = [], idx = [];
+  for (let k = 0; k <= n; k++) {
+    const u = k / n, p = curve.getPointAt(u), t = curve.getTangentAt(u);
+    const w = THREE.MathUtils.lerp(w0, w1, u) / 2;
+    pos.push(p.x - t.z * w, 0, p.z + t.x * w, p.x + t.z * w, 0, p.z - t.x * w);
+    if (k) idx.push(2 * k - 2, 2 * k, 2 * k - 1, 2 * k - 1, 2 * k, 2 * k + 1); // wound to face up
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+const RIVERS = [
+  { points: [[-95, 10.8], [-88, 12.6], [-72, 14.2], [-58, 16.2], [-52, 19]], w: [0.9, 1.6] },
+  { points: [[185, 17.5], [182, 15], [172, 13], [160, 12]], w: [0.5, 0.75] },
+  { points: [[240, 17.2], [236, 14.8], [228, 12.6], [214, 11.6]], w: [0.45, 0.7] },
+];
+RIVERS.forEach((rv) => {
+  const geo = riverGeometry(rv.points, ...rv.w);
+  const water = new THREE.Mesh(geo, mat(RIVER, { roughness: 0.3 }));
+  water.position.y = PLAIN_Y + 0.02;
+  water.receiveShadow = true;
+  scene.add(water);
+  const bank = new THREE.Mesh(riverGeometry(rv.points, rv.w[0] + 0.35, rv.w[1] + 0.35), mat('#b9cf9a'));
+  bank.position.y = PLAIN_Y + 0.01;
+  bank.receiveShadow = true;
+  scene.add(bank);
+});
+
+// Rice fields: patchwork on the western tableland (Linkou, Bali) and the northeast plain
+[[-118, 14.6], [-100, 15], [-36, 14.6], [32, 14.4], [12, 11.4], [-150, 11.4]].forEach(([deg, r]) => {
+  const [cx, cz] = toXZ(deg, r);
+  const turn = THREE.MathUtils.degToRad(-deg);
+  for (let i = -2; i <= 2; i++) for (let j = -1; j <= 1; j++) {
+    const lx = i * 0.95, lz = j * 0.75;
+    const x = cx + lx * Math.cos(turn) - lz * Math.sin(turn), z = cz + lx * Math.sin(turn) + lz * Math.cos(turn);
+    if (!freeAt(x, z, 0.2)) continue;
+    const color = ['#9cc46a', '#b5d36f', '#c9d77a', '#8fbf62'][Math.floor(drand() * 4)];
+    addDecor(color, new THREE.BoxGeometry(0.85, 0.06, 0.65).rotateY(turn).translate(x, PLAIN_Y + 0.03, z));
+  }
+});
+
+// Woods along the foothills and villages between them
+const treeTrunk = (x, z, s) => new THREE.CylinderGeometry(0.05 * s, 0.07 * s, 0.32 * s, 5).translate(x, PLAIN_Y + 0.16 * s, z);
+const treeCrown = (x, z, s) => new THREE.ConeGeometry(0.3 * s, 0.8 * s, 6).translate(x, PLAIN_Y + 0.68 * s, z);
+const roundCrown = (x, z, s) => new THREE.IcosahedronGeometry(0.3 * s, 0).translate(x, PLAIN_Y + 0.55 * s, z);
+const CROWNS = ['#4f9a5f', '#5fa86a', '#3f8a52', '#6cb06f'];
+// Trees grow in clumps: a few dozen centres, a handful of trees around each, thicker toward the southern hills
+for (let c = 0; c < 72; c++) {
+  const deg = (c / 72) * 360 + drand() * 5, r = 9.5 + drand() * 7;
+  const south = Math.abs(((deg + 360) % 360) - 200) < 80;
+  for (let n = 0; n < (south ? 7 : 4); n++) {
+    const [x, z] = toXZ(deg + (drand() - 0.5) * 10, r + (drand() - 0.5) * 1.8);
+    const rr = Math.hypot(x, z);
+    if (rr > coastRadius(THREE.MathUtils.radToDeg(Math.atan2(x, -z))) - 0.6 || !freeAt(x, z)) continue;
+    const s = 0.7 + drand() * 0.6;
+    addDecor('#8a6a4a', treeTrunk(x, z, s));
+    addDecor(CROWNS[Math.floor(drand() * 4)], drand() < 0.6 ? treeCrown(x, z, s) : roundCrown(x, z, s));
+  }
+}
+const WALLS = ['#f4efe4', '#efe3cf', '#e9eef2', '#f6e6d6'], ROOFS = ['#d9622b', '#c2410c', '#8a8f98', '#3f7fd0'];
+[[-140, 12.4], [-62, 12.6], [-10, 12.4], [70, 12.4], [100, 13.8], [150, 12.6], [205, 12.5], [262, 12.6]].forEach(([deg, r]) => {
+  for (let n = 0; n < 7; n++) {
+    const [x, z] = toXZ(deg + (drand() - 0.5) * 8, r + (drand() - 0.5) * 1.4);
+    if (!freeAt(x, z, 0.3)) continue;
+    const s = 0.55 + drand() * 0.2, turn = drand() * Math.PI;
+    addDecor(WALLS[Math.floor(drand() * 4)], new THREE.BoxGeometry(0.9 * s, 0.7 * s, 0.8 * s).rotateY(turn).translate(x, PLAIN_Y + 0.35 * s, z));
+    addDecor(ROOFS[Math.floor(drand() * 4)], new THREE.ConeGeometry(0.72 * s, 0.45 * s, 4).rotateY(turn + Math.PI / 4).translate(x, PLAIN_Y + 0.92 * s, z));
+  }
+});
+
+// Circle line: an elevated track around the island, piers every few metres, a yellow train going round
+const MRT_H = 1.15, PIERS = 44;
+for (let k = 0; k < PIERS; k++) {
+  const [x, z] = toXZ((k / PIERS) * 360, MRT_R);
+  if (!spotClear(x, z, 0)) continue;
+  addDecor('#c9c4b8', new THREE.CylinderGeometry(0.07, 0.09, MRT_H, 6).translate(x, PLAIN_Y + MRT_H / 2, z));
+}
+const mrtTrack = new THREE.Mesh(new THREE.TorusGeometry(MRT_R, 0.11, 4, 160).rotateX(Math.PI / 2).scale(1, 0.5, 1), mat('#d6d1c5'));
+mrtTrack.position.y = PLAIN_Y + MRT_H + 0.03;
+mrtTrack.castShadow = mrtTrack.receiveShadow = true;
+scene.add(mrtTrack);
+const mrtTrain = new THREE.Group();
+const CARS = 4, CAR_ARC = 0.62 / MRT_R; // radians per car
+for (let k = 0; k < CARS; k++) {
+  const car = new THREE.Group();
+  car.add(mesh(rbox(0.26, 0.24, 0.56, 0.06), '#f6c90e', 0, 0.14, 0));
+  car.add(mesh(new THREE.BoxGeometry(0.27, 0.07, 0.44), '#2b3a55', 0, 0.2, 0));
+  car.userData.offset = -k * CAR_ARC;
+  mrtTrain.add(car);
+}
+scene.add(mrtTrain);
+let trainAngle = 0.4;
+const placeTrain = () => mrtTrain.children.forEach((car) => {
+  const a = trainAngle + car.userData.offset;
+  car.position.set(Math.sin(a) * MRT_R, PLAIN_Y + MRT_H + 0.06, -Math.cos(a) * MRT_R);
+  car.rotation.y = -a + Math.PI / 2;
+});
+placeTrain();
+animators.push((t, dt) => {
+  trainAngle = (trainAngle + dt * 0.12) % (Math.PI * 2); // about 50 s per lap
+  placeTrain();
+});
+
+// Wind turbines on the Shimen coast
+const turbines = [[-24, 14.6], [-16, 15], [-8, 14.7]].map(([deg, r]) => {
+  const [x, z] = toXZ(deg, r);
+  addDecor('#f4f1e8', new THREE.CylinderGeometry(0.04, 0.08, 2.4, 6).translate(x, PLAIN_Y + 1.2, z));
+  const hub = new THREE.Group();
+  hub.position.set(x, PLAIN_Y + 2.4, z + 0.08);
+  for (let k = 0; k < 3; k++) {
+    const blade = mesh(new THREE.BoxGeometry(0.07, 0.95, 0.02).translate(0, 0.48, 0), '#ffffff');
+    blade.rotation.z = (k * Math.PI * 2) / 3;
+    hub.add(blade);
+  }
+  hub.add(mesh(new THREE.SphereGeometry(0.07, 8, 6), '#f4f1e8'));
+  hub.rotation.y = THREE.MathUtils.degToRad(-deg); // blades face the sea
+  scene.add(hub);
+  return hub;
+});
+animators.push((t, dt) => turbines.forEach((hub, k) => { hub.children.forEach((b, j) => { if (j < 3) b.rotation.z += dt * (1.1 + k * 0.15); }); }));
+
+// Fishing boats bobbing off the north and east coast
+const boats = [[-5, 20.5], [28, 19.5], [52, 21], [82, 20.2], [105, 21.5]].map(([deg, r], k) => {
+  const [x, z] = toXZ(deg, r);
+  const boat = new THREE.Group();
+  boat.add(mesh(rbox(0.5, 0.18, 1.1, 0.06), ['#e5484d', '#3f7fd0', '#f4f1e8'][k % 3], 0, 0.09, 0));
+  boat.add(mesh(rbox(0.32, 0.26, 0.36, 0.04), '#f4f1e8', 0, 0.3, -0.15));
+  rod(boat, v3(0, 0.18, 0.25), v3(0, 0.95, 0.25), 0.02, '#8a6a4a');
+  boat.position.set(x, -1.28, z);
+  boat.rotation.y = drand() * Math.PI * 2;
+  scene.add(boat);
+  return boat;
+});
+animators.push((t) => boats.forEach((b, k) => {
+  b.position.y = -1.28 + Math.sin(t * 1.1 + k) * 0.06;
+  b.rotation.z = Math.sin(t * 0.9 + k * 2) * 0.06;
+}));
+
+decorGeos.forEach((geos, color) => {
+  const m = new THREE.Mesh(mergeGeometries(geos), mat(color, { flatShading: true }));
+  m.castShadow = m.receiveShadow = true;
+  scene.add(m);
+});
+
+await yieldToBrowser();
+
 // ---------- People ----------
 const PEOPLE = [
   { name: 'Rose', look: 'female', shirt: '#e86a92', hair: '#5a3825' },
@@ -2641,10 +2799,10 @@ function updatePersonLabels() {
 // ---------- Camera fly ----------
 const HOME_TARGET = new THREE.Vector3(0, 0, 0);
 // Portrait screens need more distance to fit the width; look down steeper so the southern mountains stay out of the way
-const homeOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 92, 48) : new THREE.Vector3(0, 37, 40));
-// The ring of policy islands filling the screen, Taipei in the middle
-const ISLANDS_TARGET = new THREE.Vector3(0, 0, -1.5);
-const islandsOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 52, 40) : new THREE.Vector3(0, 21, 21));
+const homeOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 92, 48) : new THREE.Vector3(0, 33, 36));
+// The policy islands filling the screen
+const ISLANDS_TARGET = new THREE.Vector3(0, 0, 0);
+const islandsOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 60, 44) : new THREE.Vector3(0, 23, 23));
 // On phones the bottom rail covers the lower part of the screen, so the ring is aimed a little south to sit above it
 const islandsTarget = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 0, 2.6) : ISLANDS_TARGET.clone());
 let fly = null;
@@ -2800,7 +2958,7 @@ function select(i) {
   openCard();
   islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
   applyDim();
-  focusOn(islands[i].position);
+  focusOn(islands[i].position, CONTENT_SCALE);
   setHash(`policy/${p.short}`, p.short);
   track('view_policy', { policy_name: p.short, policy_group: grp.name });
   markVisited(i);
@@ -2832,8 +2990,9 @@ function selectSpot(k) {
   renderIndex();
 }
 
-function focusOn(pos) {
-  const offset = new THREE.Vector3(5, 7, 9).multiplyScalar(camera.aspect < 0.8 ? 1.5 : 1);
+// `scale` widens the shot for subjects larger than a landmark islet, such as the policy islands
+function focusOn(pos, scale = 1) {
+  const offset = new THREE.Vector3(5, 7, 9).multiplyScalar((camera.aspect < 0.8 ? 1.5 : 1) * scale);
   const target = pos.clone().add(new THREE.Vector3(0, 1, 0));
   // Shift the view so the subject is not hidden behind the card
   if (camera.aspect >= 0.8) target.add(new THREE.Vector3(1.8, 0, -1.2));
@@ -2982,7 +3141,7 @@ function tourShow(i) {
   document.getElementById('tour-items').innerHTML = p.items.filter((t) => t !== key).slice(0, 3).map((t) => `<li>${esc(t)}</li>`).join('');
   islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
   labels.forEach((el, k) => el.classList.toggle('active', k === i));
-  const offset = camera.aspect < 0.8 ? new THREE.Vector3(0, 9, 12) : new THREE.Vector3(5, 7, 9);
+  const offset = (camera.aspect < 0.8 ? new THREE.Vector3(0, 9, 12) : new THREE.Vector3(5, 7, 9)).multiplyScalar(CONTENT_SCALE);
   const target = islands[i].position.clone().add(new THREE.Vector3(0, 1, 0));
   if (camera.aspect < 0.8) target.add(new THREE.Vector3(0, -2.4, 2.4)); // the caption takes the lower half on phones
   flyTo(target, offset);
