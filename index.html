@@ -801,14 +801,14 @@
   <div class="actions" id="header-actions">
     <button id="index-toggle" type="button" aria-expanded="false" aria-controls="index">☰ 清單</button>
     <button id="follow-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="follow-menu" aria-label="追隨"><svg class="gicon cam" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4.5" width="9" height="7" rx="1.5"/><path d="m10.5 7 4-2.2v6.4l-4-2.2"/></svg><span class="txt">追隨</span></button>
-    <button id="tour-start" type="button">▶ 帶我逛一圈</button>
+    <button id="tour-start" type="button">▶ 跑一趟全馬</button>
     <button id="islands-view" type="button">政見島</button>
     <button id="home" type="button">全景</button>
     <a id="vote-link" class="btn-link" href="vote/">投票資訊</a>
   </div>
 </header>
 <nav id="rail" aria-label="政見卡片">
-  <div class="rail-head"><b>14 項政見 <span class="prog" id="rail-progress"></span></b><button type="button" id="tour-start-rail">▶ 帶我逛一圈</button></div>
+  <div class="rail-head"><b>14 個補給站 <span class="prog" id="rail-progress"></span></b><button type="button" id="tour-start-rail">▶ 跑一趟全馬</button></div>
   <div class="rail-track" id="rail-track"></div>
 </nav>
 <aside id="index" hidden aria-label="政見與景點清單">
@@ -836,7 +836,7 @@
   <ul class="tour-items" id="tour-items"></ul>
   <div class="bar"><i id="tour-bar"></i></div>
   <div class="acts">
-    <button type="button" id="tour-prev" aria-label="上一座">‹</button>
+    <button type="button" id="tour-prev" aria-label="上一站">‹</button>
     <button type="button" id="tour-pause">暫停</button>
     <button type="button" class="primary" id="tour-open">看詳細</button>
     <button type="button" id="tour-next" aria-label="下一座">›</button>
@@ -849,7 +849,7 @@
     <div id="quiz-body"></div>
   </div>
 </div>
-<div id="daily" role="dialog" aria-modal="true" aria-label="每日一題" hidden>
+<div id="daily" role="dialog" aria-modal="true" aria-label="今日補給題" hidden>
   <div class="quiz-box">
     <button class="close" id="daily-close" type="button" aria-label="關閉">×</button>
     <div id="daily-body"></div>
@@ -944,42 +944,43 @@ const GROUPS = {
   culture: { name: '教育與文化', color: '#3a9b6a' },
 };
 
-// cell = axial hex coordinate (+q east, -r north); one compact island in rows of 2, 3, 4, 3, 2, laid out roughly by
-// New Taipei geography: the coast north, Linkou northwest, Xinzhuang west, Banqiao in the middle, the mountain towns east,
-// Sanxia southwest and Wulai south
+// cell = axial hex coordinate (+q east, -r north); one compact island in rows of 2, 3, 4, 3, 2. The cells follow the
+// marathon course (COURSE_ORDER below): each station is next to the one before, and the last is next to the first.
+// Of the loops through all 14 cells, this one keeps the most geography: the coast north, the mountain towns east,
+// Wulai south, and the half-marathon station (housing, Banqiao) in the middle
 const POLICIES = [
   {
-    short: '新皇冠海岸', title: '新北觀光政見：新皇冠計畫', slug: '新皇冠海岸計畫', group: 'tourism', type: 'coast', cell: [0, -2],
+    short: '新皇冠海岸', title: '新北觀光政見：新皇冠計畫', slug: '新皇冠海岸計畫', group: 'tourism', type: 'coast', cell: [1, -2],
     summary: '串連八里、淡水、三芝、石門、金山、萬里、瑞芳、貢寮八顆海岸寶石，把新北海岸打造成國際觀光品牌。',
     items: ['漁港碼頭服務總體檢，設置漁港服務站、全齡無障礙動線', '核四重件碼頭轉型為國際級遊艇與休閒船艇泊區', '自行車道每 5 公里設簡易休息站，景點道路全面劃設人行道', '推動台 62 線延伸金山萬里、三芝輕軌、八里輕軌', '龍洞打造全年潛水基地，台北港興建退役潛艦博物館'],
   },
   {
-    short: '七大教育', title: '七大教育政見', slug: '七大教育政見', group: 'culture', type: 'school', cell: [1, -2],
+    short: '七大教育', title: '七大教育政見', slug: '七大教育政見', group: 'culture', type: 'school', cell: [-2, 0],
     summary: '做老師、學生與家長的靠山，以市府高度跨界整合資源，打開孩子的想像力。',
     items: ['推動「全國遊學團」，讓新北山海城鄉成為孩子的教室', '全面導入「技職 AI 賦能」，升級實習工場', '補足專輔人力、強化學生輔導諮商中心，簡化行政程序', '教師節禮金調升至 2,000 元，假日出勤可選加班費或補休', '公立國中小營養午餐免費，加碼補助團膳食安設備'],
   },
   {
-    short: '產業升級', title: '產業升級四大支柱政見', slug: '產業升級四大支柱政見', group: 'work', type: 'factory', cell: [-1, -1],
+    short: '產業升級', title: '產業升級四大支柱政見', slug: '產業升級四大支柱政見', group: 'work', type: 'factory', cell: [0, -1],
     summary: '傳產加值、園區開發、商圈創生、AI 政府四大支柱，做新北百工百業的後盾。',
     items: ['加速工業區立體化更新，設立「新北市工業設計聚落」', '新建新北市國際會展中心，提供產業會展補助', '整體開發泰山楓江、樹林大柑園科技園區，加速淡海科學城', '老街與特色商圈「一商圈一特色」振興計畫', '公私協力興建高效能 AI 算力中心'],
   },
   {
-    short: '勞工權益', title: '勞工政見', slug: '勞工政見', group: 'work', type: 'crane', cell: [-2, 0],
+    short: '勞工權益', title: '勞工政見', slug: '勞工政見', group: 'work', type: 'crane', cell: [-1, 0],
     summary: '新北有超過 216 萬位勞工，要照顧勞工、照顧職業工會，也照顧每一個勞工家庭。',
     items: ['調升職災慰問金、勞資爭議涉訟補助金', '退休煤礦工慰問金從每年 2,000 元提高為 6,000 元', '擴大多元職訓，支持中高齡再就業', '改善工會辦公空間，調高職業工會行政事務費', '建立市府與工會對話機制'],
   },
   {
-    short: '牙齒口腔', title: '牙齒口腔保健政見', slug: '牙齒口腔保健政見', group: 'care', type: 'tooth', cell: [0, 0],
+    short: '牙齒口腔', title: '牙齒口腔保健政見', slug: '牙齒口腔保健政見', group: 'care', type: 'tooth', cell: [-1, -1],
     summary: '整合醫療網絡，從兒童防蛀到長輩假牙，守護全體市民的口腔健康。',
     items: ['0–6 歲孩童看醫生免門診和住院部分負擔', '免費塗氟從 6 歲延伸到 12 歲', '65 歲以上長輩裝假牙最高補助 5 萬元', '市府投入資源獎勵居家牙醫服務', '嚴格稽查無照牙技師與非法牙材'],
   },
   {
-    short: '毛孩照顧', title: '三大照顧寵物政見', slug: '三大照顧寵物政見', group: 'care', type: 'pets', cell: [1, -1],
+    short: '毛孩照顧', title: '三大照顧寵物政見', slug: '三大照顧寵物政見', group: 'care', type: 'pets', cell: [-2, 2],
     summary: '照顧毛小孩、做獸醫師後盾，也要升級動物之家、提升認養率。',
     items: ['擴大疫苗與健檢補助，認養毛孩享終身全額補助', '補貼夜間開診動物醫院，擴大實施寵物長照', '推動友善寵物專車／計程車標章與補貼', '增設寵物公園並強化遮陰防熱設施', '提升動物之家預算，導入行為訓練等專業服務'],
   },
   {
-    short: '三大長照', title: '三大長照政見', slug: '三大長照政見', group: 'care', type: 'clinic', cell: [0, 1],
+    short: '三大長照', title: '三大長照政見', slug: '三大長照政見', group: 'care', type: 'clinic', cell: [1, -1],
     summary: '新北 65 歲以上人口突破 82 萬、全台之冠。「照顧他人的人，也需要被照顧」。',
     items: ['與機構和專業人員一同推動行政減負', '出院後居家服務與輔具一次到位，「先用後審、公辦借調」', '配合長照 3.0 加強醫療與長照銜接，帶入專業復能服務', '發展 AI 智慧照顧，建立以租代買機制降低導入門檻'],
   },
@@ -989,36 +990,45 @@ const POLICIES = [
     items: ['縫合五大山系與海岸線步道，建構「新北大縱走」', '推廣「淡蘭土地公」朝聖文化，開發專屬御朱印帳', '與台鐵合作開發觀光列車，打造特色車站', '推動金九台車復駛，重現百年礦業遺產'],
   },
   {
-    short: '原住民族', title: '三大原住民族政見', slug: '三大原住民族政見', group: 'culture', type: 'tribe', cell: [-1, 2],
+    short: '原住民族', title: '三大原住民族政見', slug: '三大原住民族政見', group: 'culture', type: 'tribe', cell: [0, 1],
     summary: '新北原住民族人口六都第二。推動預算翻轉計畫，人均預算加倍，並確保「只增不減」。',
     items: ['原住民族租金補貼，持續興建部落聚會所', '55 歲以上族人假牙補助最高 5 萬元', '建置烏來公共托育中心', '提高原住民族社團補助，擴大返鄉祭儀交通費補助', '成立新北市原住民族青年團，新增頭目文化傳承事務費'],
   },
   {
-    short: '四大客家', title: '四大客家政見', slug: '四大客家政見', group: 'culture', type: 'hakka', cell: [-2, 1],
+    short: '四大客家', title: '四大客家政見', slug: '四大客家政見', group: 'culture', type: 'hakka', cell: [-1, 2],
     summary: '照顧客家長輩、支持客家青年，結合新科技讓客家文化融入日常。',
     items: ['客語及技藝課程推廣到校園與社區', '盤點低利用公有空間，增加客家青年新創孵育基地', '建立客家文化 AI 資料庫與 AI 客語教學平台', '放寬設置伯公照護站，照顧都會客家長輩', '擴大客家幣使用範圍'],
   },
   {
-    short: '家庭照顧', title: '三大家庭照顧政見', slug: '三大家庭照顧政見', group: 'care', type: 'nursery', cell: [-2, 2],
+    short: '家庭照顧', title: '三大家庭照顧政見', slug: '三大家庭照顧政見', group: 'care', type: 'nursery', cell: [-1, 1],
     summary: '力挺照顧者、育兒全方位、貼心顧長輩，做所有家庭的神隊友。',
     items: ['加發職業照顧者夜間、緊急及困難照顧津貼', '獎勵友善家庭企業最高 100 萬', '企業組隊設置托育首三年虧損補助 50%，開辦夜托、擴大臨托', '打造「95 公分視角」的友善城市', '擴大補助獨居老人智慧救援裝置與失智症 AI 篩檢'],
   },
   {
-    short: '長幼福利', title: '六大長幼福利政見', slug: '六大長幼福利政見', group: 'care', type: 'house', roof: '#f2a65a', cell: [-1, 1],
+    short: '長幼福利', title: '六大長幼福利政見', slug: '六大長幼福利政見', group: 'care', type: 'house', roof: '#f2a65a', cell: [0, -2],
     summary: '減輕育兒家庭的支出負擔，鼓勵長輩多出門走走，市府做家庭的後盾。',
     items: ['公立國中小學童營養午餐全面免費、提升品質', '0–6 歲孩童看醫生免門診和住院部分負擔', '6 歲以下免費接種腸病毒、輪狀病毒疫苗', '早產兒家庭照顧津貼 3 萬元', '65 歲以上裝假牙最高補助 5 萬元', '敬老卡提高到每月 1,000 點，效期改年度計算'],
   },
   {
-    short: '都更住宅', title: '都更與住宅政見', slug: '都更與住宅政見', group: 'city', type: 'towers', cell: [-1, 0],
+    short: '都更住宅', title: '都更與住宅政見', slug: '都更與住宅政見', group: 'city', type: 'towers', cell: [0, 0],
     summary: '以公共運輸為中心翻新街廓機能，同時保留地方文化與觀光特色。',
     items: ['成立都市更新局，審議進度透明可查詢', '以捷運、鐵路、輕軌與轉運站為中心更新街廓機能', '配合歷史建築或觀光老街，營造特色街景', '推動青年育兒宅，最長租期可達 20 年', '補助包租代管優先租給長者，推動學生包租代管'],
   },
   {
-    short: '青年支持', title: '四大青年支持政見', slug: '四大青年支持政見', group: 'work', type: 'towers', glass: true, cell: [0, -1],
+    short: '青年支持', title: '四大青年支持政見', slug: '四大青年支持政見', group: 'work', type: 'towers', glass: true, cell: [-2, 1],
     summary: '從知識、資金、空間到身心，讓每位新北青年都能在城市角落實踐理想。',
     items: ['微型創業一條龍加速器、職涯導師制', '青農創業貸款免息額度提高（一般青農 200 萬→500 萬）', '技術士證照獎勵金翻倍', '活化閒置空間為青創基地，定期舉辦青年黑客松', '心理健康「3+3」，新北加碼 3 次免費心理諮商'],
   },
 ];
+
+// ---------- Marathon: the island is a full-marathon course and every policy is an aid station ----------
+// Stations follow one life from childhood to old age, one every 3 km, so the 14th is at km 42 and the finish 195 m on.
+// POLICIES keeps its order because share/policy-NN.html and og/policy-NN.png are numbered by it.
+const COURSE_ORDER = ['長幼福利', '牙齒口腔', '七大教育', '青年支持', '勞工權益', '產業升級', '都更住宅', '家庭照顧', '毛孩照顧', '四大客家', '原住民族', '鑽石山城', '三大長照', '新皇冠海岸'];
+const COURSE = COURSE_ORDER.map((short) => POLICIES.findIndex((p) => p.short === short)); // station → policy index
+const kmOf = (i) => (COURSE.indexOf(i) + 1) * 3;
+const KM_FULL = 42.195;
+const kmRun = (n) => (n >= POLICIES.length ? KM_FULL : n * 3); // n stations visited
 // Small line icons per category, drawn in currentColor
 const GROUP_ICONS = {
   care: '<path d="M8 13.5S2 10 2 5.8A3.2 3.2 0 0 1 8 4a3.2 3.2 0 0 1 6 1.8C14 10 8 13.5 8 13.5z"/>',
@@ -1108,6 +1118,7 @@ const sharedGeo = (key, make) => cached(geoCache, key, make);
 const shade = (hex, amt) => '#' + new THREE.Color(hex).lerp(new THREE.Color(amt > 0 ? '#ffffff' : '#000000'), Math.abs(amt)).getHexString();
 
 const animators = [];
+const STORY_FONT = '"PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif'; // canvas text: story cards and 3D signs
 
 function tree(g, x, z, s = 1, crown = '#4f9a5f') {
   g.add(mesh(new THREE.CylinderGeometry(0.06 * s, 0.08 * s, 0.4 * s, 6), '#8a6a4a', x, 0.2 * s, z));
@@ -1999,7 +2010,7 @@ const labels = POLICIES.map((p, i) => {
   const el = document.createElement('button');
   el.type = 'button';
   el.className = 'label';
-  el.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span class="name">${p.short}</span>`;
+  el.innerHTML = `<span class="n">KM${kmOf(i)}</span><span class="name">${p.short}</span>`;
   el.setAttribute('aria-label', p.short);
   el.addEventListener('click', () => select(i));
   labelsEl.appendChild(el);
@@ -2612,6 +2623,7 @@ function makePerson(p) {
   const female = p.look === 'female';
   if (female) body.add(mesh(new THREE.ConeGeometry(0.16, 0.36, 12), p.shirt, 0, 0.38, 0));
   else body.add(mesh(rbox(0.22, 0.28, 0.14, 0.04), p.shirt, 0, 0.36, 0));
+  body.add(mesh(new THREE.BoxGeometry(0.12, 0.09, 0.01), '#ffffff', 0, female ? 0.36 : 0.37, female ? 0.105 : 0.073)); // race bib
   const headY = female ? 0.65 : 0.6;
   body.add(mesh(new THREE.SphereGeometry(0.11, 14, 10), SKIN, 0, headY, 0));
   body.add(mesh(new THREE.SphereGeometry(0.118, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), p.hair, 0, headY, -0.01));
@@ -2636,8 +2648,139 @@ function makePerson(p) {
   return { g, body, legs, arms, ride };
 }
 
+// ---------- Marathon course through the walk graph ----------
+// Each leg crosses one of the (usually two) bridges between consecutive stations. On each island runners go from the
+// corner where they came off the bridge to the corner of the next bridge, along the rim the shorter way. Of all bridge
+// choices, the course takes the one with the least rim running, but never enters and leaves at the same corner, so
+// every station gets a stretch of rim (where its aid tent stands).
+const legOptions = COURSE.map((isl, s) => {
+  const next = COURSE[(s + 1) % COURSE.length];
+  return nodes.flatMap((n, j) => (n.island === isl ? n.links.filter((x) => nodes[x].island === next).map((x) => [j, x]) : []));
+});
+const rimSteps = (a, b) => {
+  const d = Math.abs((a % 6) - (b % 6));
+  return Math.min(d, 6 - d);
+};
+let coursePick = null;
+for (let mask = 0, best = Infinity; mask < 1 << COURSE.length; mask++) {
+  const pick = legOptions.map((o, s) => o[(mask >> s) & 1] ?? o[0]);
+  const cost = pick.reduce((sum, [exit], s) => {
+    const d = rimSteps(pick[(s + COURSE.length - 1) % COURSE.length][1], exit);
+    return sum + (d === 0 ? 99 : d);
+  }, 0);
+  if (cost < best) [best, coursePick] = [cost, pick];
+}
+// Node indices in running order, starting where the first station's runners come off the start bridge
+const courseNodes = [];
+const stationRim = []; // per station: its nodes on the rim, entry first
+COURSE.forEach((isl, s) => {
+  const entry = coursePick[(s + COURSE.length - 1) % COURSE.length][1], exit = coursePick[s][0];
+  const base = entry - (entry % 6), forward = (exit % 6 - entry % 6 + 6) % 6;
+  const dir = forward <= 3 ? 1 : -1, steps = rimSteps(entry, exit);
+  const rim = Array.from({ length: steps + 1 }, (_, k) => base + ((entry % 6 + dir * k + 6) % 6));
+  stationRim.push(rim);
+  courseNodes.push(...rim);
+});
+
+// Course line: a blue stripe down the middle of the sidewalk, part of each island so it rises and bobs with it
+const COURSE_BLUE = '#2f6fdb';
+stationRim.forEach((rim) => {
+  const g = islands[nodes[rim[0]].island];
+  const parts = rim.slice(1).map((j, k) => {
+    const a = nodes[rim[k]].lanes.run, b = nodes[j].lanes.run;
+    const len = Math.hypot(b.x - a.x, b.z - a.z);
+    return new THREE.BoxGeometry(0.08, 0.006, len + 0.08)
+      .rotateY(Math.atan2(b.x - a.x, b.z - a.z))
+      .translate((a.x + b.x) / 2 - g.position.x, PATH_TOP + LANES.sidewalk.top + 0.004, (a.z + b.z) / 2 - g.position.z);
+  });
+  g.add(new THREE.Mesh(mergeGeometries(parts), mat(COURSE_BLUE)));
+});
+
+// A sign made from canvas text, for the km boards and the start/finish banner
+function textTexture(key, w, h, draw) {
+  return cached(texCache, key, () => {
+    const cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    draw(cv.getContext('2d'), w, h);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
+  });
+}
+
+// Each station: a km board on a post where runners arrive, and an aid tent with a table of cups inside the next corner
+stationRim.forEach((rim, s) => {
+  const i = COURSE[s], g = islands[i], color = GROUPS[POLICIES[i].group].color;
+  const km = (s + 1) * 3;
+  const local = (node, off) => {
+    const k = node % 6, a = (k * Math.PI) / 3, r = laneCornerR(off);
+    return [Math.sin(a) * r, Math.cos(a) * r];
+  };
+  // A third of the way along the first edge, clear of the bridge (and of the start arch at the first station)
+  const [ax, az] = local(rim[0], LANES.sidewalk.off + 0.1), [bx, bz] = local(rim[1], LANES.sidewalk.off + 0.1);
+  const [sx, sz] = [ax + (bx - ax) * 0.35, az + (bz - az) * 0.35];
+  g.add(mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), '#5b6370', sx, PATH_TOP + 0.5, sz));
+  const board = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: textTexture(`km${km}`, 256, 128, (ctx, w, h) => {
+      ctx.fillStyle = COURSE_BLUE;
+      ctx.beginPath();
+      ctx.roundRect(4, 4, w - 8, h - 8, 22);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `900 72px ${STORY_FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`KM ${km}`, w / 2, h / 2 + 4);
+    }),
+  }));
+  board.scale.set(0.96, 0.48, 1);
+  board.position.set(sx, PATH_TOP + 1.2, sz);
+  g.add(board);
+
+  const [tx, tz] = local(rim[Math.min(1, rim.length - 1)], LANES.road.off - 0.5);
+  const tent = new THREE.Group();
+  [[-0.2, -0.14], [0.2, -0.14], [-0.2, 0.14], [0.2, 0.14]].forEach(([x, z]) => tent.add(mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.42, 4), '#d1d5db', x, 0.21, z)));
+  const roof = mesh(new THREE.ConeGeometry(0.34, 0.16, 4), color, 0, 0.5, 0);
+  roof.rotation.y = Math.PI / 4;
+  roof.scale.set(1.3, 1, 1);
+  tent.add(roof);
+  tent.add(mesh(new THREE.BoxGeometry(0.4, 0.03, 0.16), '#ffffff', 0, 0.2, 0));
+  [-0.12, 0, 0.12].forEach((x) => tent.add(mesh(new THREE.CylinderGeometry(0.018, 0.014, 0.05, 8), '#7fc3dc', x, 0.24, 0)));
+  tent.position.set(tx, PATH_TOP, tz);
+  tent.scale.setScalar(1.5);
+  tent.rotation.y = Math.atan2(tx, tz); // the open side faces the rim
+  g.add(tent);
+});
+
+// Start/finish arch over the bridge from the last station back to the first
+{
+  const a = nodes[coursePick[COURSE.length - 1][0]].lanes.bridge, b = nodes[coursePick[COURSE.length - 1][1]].lanes.bridge;
+  const arch = new THREE.Group();
+  arch.position.set((a.x + b.x) / 2, PATH_TOP, (a.z + b.z) / 2);
+  arch.rotation.y = Math.atan2(b.x - a.x, b.z - a.z); // local z runs along the bridge
+  arch.scale.setScalar(1.5);
+  [-0.36, 0.36].forEach((x) => arch.add(mesh(rbox(0.1, 1.3, 0.1, 0.03), '#e0663d', x, 0.65, 0)));
+  const banner = textTexture('finish', 512, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#e0663d';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 54px ${STORY_FONT}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`起點・終點 ${KM_FULL}K`, w / 2, h / 2 + 3);
+  });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.24, 0.06), [mat('#e0663d'), mat('#e0663d'), mat('#e0663d'), mat('#e0663d'),
+    new THREE.MeshStandardMaterial({ map: banner, roughness: 0.8 }), new THREE.MeshStandardMaterial({ map: banner, roughness: 0.8 })]);
+  sign.position.y = 1.3;
+  sign.castShadow = true;
+  arch.add(sign);
+  scene.add(arch);
+}
+
 const people = PEOPLE.map((p, i) => {
-  const from = Math.floor(Math.random() * nodes.length);
+  const ci = Math.floor((i * courseNodes.length) / PEOPLE.length); // spread out along the course
   const label = document.createElement('button');
   label.type = 'button';
   label.className = 'label person';
@@ -2645,7 +2788,7 @@ const people = PEOPLE.map((p, i) => {
   label.setAttribute('aria-label', `追隨 ${p.name}`);
   label.addEventListener('click', () => startFollow(i));
   labelsEl.appendChild(label);
-  return { ...makePerson(p), label, from, to: nodes[from].links[0], t: 0, wait: i * 0.4, phase: 0 };
+  return { ...makePerson(p), label, ci, from: courseNodes[ci], to: courseNodes[(ci + 1) % courseNodes.length], t: 0, wait: i * 0.4, phase: 0 };
 });
 
 function stepPerson(w, dt) {
@@ -2659,9 +2802,10 @@ function stepPerson(w, dt) {
     // Wheels roll by distance travelled; the group is scaled, so divide by the scaled radius
     w.ride?.wheels.forEach((wheel) => { wheel.rotation.x += (dt * speed) / (w.ride.wheelRadius * 1.15); });
     if (w.t >= 1) {
-      const options = nodes[w.to].links.filter((j) => j !== w.from);
-      [w.from, w.to, w.t] = [w.to, options[Math.floor(Math.random() * options.length)], 0];
-      if (Math.random() < 0.1) w.wait = 0.6 + Math.random() * 1.6;
+      // Everyone runs the course; now and then a short stop, like grabbing a cup at an aid station
+      w.ci = (w.ci + 1) % courseNodes.length;
+      [w.from, w.to, w.t] = [w.to, courseNodes[(w.ci + 1) % courseNodes.length], 0];
+      if (Math.random() < 0.06) w.wait = 0.5 + Math.random();
     }
   }
   const running = w.wait <= 0 && dt > 0;
@@ -2840,8 +2984,8 @@ let cardOpener = null;
 function navList() {
   if (selectedSpot >= 0) return { list: SPOTS.map((_, k) => k), cur: selectedSpot, name: (k) => SPOTS[k].name, unit: '個', go: selectSpot };
   const inFilter = filter && POLICIES[selected].group === filter;
-  const list = POLICIES.flatMap((p, k) => (!inFilter || p.group === filter ? [k] : []));
-  return { list, cur: selected, name: (k) => POLICIES[k].short, unit: '座', go: select };
+  const list = COURSE.filter((k) => !inFilter || POLICIES[k].group === filter);
+  return { list, cur: selected, name: (k) => POLICIES[k].short, unit: '站', go: select };
 }
 function step(dir) {
   const n = navList();
@@ -2855,7 +2999,7 @@ function updateNav() {
   prevBtn.setAttribute('aria-label', `上一${n.unit}：${n.name(prev)}`);
   nextBtn.setAttribute('aria-label', `下一${n.unit}：${n.name(next)}`);
   prevBtn.hidden = nextBtn.hidden = len < 2;
-  posEl.textContent = `${String(pos + 1).padStart(2, '0')} / ${String(len).padStart(2, '0')}`;
+  posEl.textContent = n.go === select ? `KM ${kmOf(n.cur)}` : `${String(pos + 1).padStart(2, '0')} / ${String(len).padStart(2, '0')}`;
 }
 
 // Islands that are not in focus fade toward grey; dimmed materials are cloned once and cached
@@ -3071,8 +3215,8 @@ legendEl.addEventListener('click', () => { if (menuToggle.offsetParent) toggleMe
 // ---------- Phone rail: swipeable policy cards; the card in view lights up its island ----------
 const railTrack = document.getElementById('rail-track');
 railTrack.innerHTML = `<button type="button" class="finder" data-finder-card><span class="t">✦ 找我的政見</span><span class="k">選身分或住的區，直接列出跟你有關的政見</span></button>`
-  + POLICIES.map((p, i) => `<button type="button" data-i="${i}">
-      <span class="t"><span class="n">${String(i + 1).padStart(2, '0')}</span><span style="color:${readableBg(GROUPS[p.group].color)};display:inline-flex">${groupIcon(p.group)}</span>${p.short}</span>
+  + COURSE.map((i) => POLICIES[i]).map((p, k) => `<button type="button" data-i="${COURSE[k]}">
+      <span class="t"><span class="n">KM${(k + 1) * 3}</span><span style="color:${readableBg(GROUPS[p.group].color)};display:inline-flex">${groupIcon(p.group)}</span>${p.short}</span>
       <span class="k">${keyPointOf(p)}</span>
     </button>`).join('');
 // ---------- Progress: which policies this visitor has opened (kept only in this browser) ----------
@@ -3091,9 +3235,9 @@ const railProgress = document.getElementById('rail-progress');
 function updateProgress() {
   labels.forEach((el, k) => el.classList.toggle('seen', visited.has(POLICIES[k].short)));
   railTrack.querySelectorAll('button[data-i]').forEach((b) => b.classList.toggle('seen', visited.has(POLICIES[Number(b.dataset.i)].short)));
-  railProgress.textContent = `· 已看 ${visited.size}`;
+  railProgress.textContent = `· 已跑 ${kmRun(visited.size)} km`;
   const chip = legendEl.querySelector('.progress-chip');
-  if (chip) chip.textContent = `已看 ${visited.size} / ${POLICIES.length}`;
+  if (chip) chip.textContent = `🏃 已跑 ${kmRun(visited.size)} / ${KM_FULL} km`;
 }
 function markVisited(i) {
   const name = POLICIES[i].short;
@@ -3104,10 +3248,10 @@ function markVisited(i) {
   if (visited.size === POLICIES.length) {
     track('visit_all');
     store.set('completedAt', taipeiToday);
-    showToast('你看完 14 項政見了！可以領一張島民證', 9000);
+    showToast(`全馬完賽！${KM_FULL} km 跑完 14 個補給站，可以領一張完賽證書`, 9000);
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = '領取島民證';
+    btn.textContent = '領取完賽證書';
     btn.addEventListener('click', () => openCompleteStory(btn));
     toastEl.append(btn);
   }
@@ -3121,17 +3265,17 @@ legendEl.addEventListener('click', (e) => {
 
 // ---------- Guided tour: fly island to island with each policy's key point ----------
 // Time on each island follows how much there is to read (about 8 characters a second), within 7–15 s
-const tourStay = (i) => {
-  const p = POLICIES[i], key = keyPointOf(p);
+const tourStay = (pos) => {
+  const p = POLICIES[COURSE[pos]], key = keyPointOf(p);
   const chars = p.summary.length + key.length + p.items.filter((t) => t !== key).slice(0, 3).join('').length;
   return Math.min(15, Math.max(7, chars / 8));
 };
 const tourEl = document.getElementById('tour');
 let tour = null; // { i, left, paused }
-function tourShow(i) {
-  const p = POLICIES[i];
+function tourShow(pos) {
+  const i = COURSE[pos], p = POLICIES[i];
   const grp = GROUPS[p.group], key = keyPointOf(p);
-  document.getElementById('tour-step').textContent = `帶你逛一圈 · ${i + 1} / ${POLICIES.length}`;
+  document.getElementById('tour-step').textContent = `跑一趟全馬 · 第 ${pos + 1} 站 KM ${kmOf(i)}`;
   const tag = document.getElementById('tour-tag');
   tag.innerHTML = `${groupIcon(p.group)}${grp.name}`;
   tag.style.background = readableBg(grp.color);
@@ -3170,7 +3314,7 @@ function endTour(done = false, flyHome = true) {
   if (flyHome) flyTo(islandsTarget(), islandsOffset());
   if (done) {
     track('tour_complete');
-    showToast('逛完一圈了！點任何一座島可以看詳細內容', 6000);
+    showToast('跑完全馬了！點任何一座島可以看詳細內容', 6000);
   }
 }
 function updateTour(dt) {
@@ -3201,7 +3345,7 @@ function pauseTour(paused) {
 document.getElementById('tour-pause').addEventListener('click', () => pauseTour(!tour?.paused));
 document.getElementById('tour-end').addEventListener('click', () => endTour());
 document.getElementById('tour-open').addEventListener('click', () => {
-  const i = tour?.i;
+  const i = tour ? COURSE[tour.i] : undefined;
   endTour(false, false);
   if (i !== undefined) select(i);
 });
@@ -3706,12 +3850,12 @@ function dailyMarks() {
   }).join('');
 }
 const dailyLink = (source) => `${SITE}?utm_source=${source}&utm_medium=social&utm_campaign=daily#daily`;
-const dailyShareText = (source) => `新北政見島 每日一題 #${dailyNo}\n${dailyMarks()} 連續 ${dailyStreak()} 天\n今天這題你答得出來嗎？\n${dailyLink(source)}`;
+const dailyShareText = (source) => `新北政見島 今日補給題 #${dailyNo}\n${dailyMarks()} 連續 ${dailyStreak()} 天\n今天這題你答得出來嗎？\n${dailyLink(source)}`;
 
 function renderDaily() {
   const x = todayQ, mine = dailyLog[viewDay];
   const hoursLeft = 24 - new Date(Date.now() + 8 * 3600e3).getUTCHours();
-  dailyBody.innerHTML = `<div class="step">🏮 每日一題 #${dailyNo} · ${todayM}/${todayD}</div>
+  dailyBody.innerHTML = `<div class="step">🏮 今日補給題 #${dailyNo} · ${todayM}/${todayD}</div>
     <h3>${x.q}</h3>
     <div class="choices">${x.choices.map((c, k) => `<button type="button" data-c="${k}"${mine ? ` class="${k === x.answer ? 'right' : k === mine.k ? 'wrong' : ''}" disabled` : ''}>${c}</button>`).join('')}</div>
     ${mine ? `<p class="why">${mine.ok ? '答對了！' : `答案是 ${x.choices[x.answer]}。`}政見原文：「${x.item}」</p>
@@ -3761,7 +3905,7 @@ dailyEl.addEventListener('click', (e) => {
     share('copy_link');
     navigator.clipboard?.writeText(dailyShareText('copy_link')).then(() => showToast('已複製，貼到貼文或訊息裡'), () => showToast('無法複製，請改用其他分享方式'));
   } else if (act === 'card') {
-    showStory(makeDailyCanvas(), `新北政見島-每日一題-${dailyNo}.png`, dailyLink('story'), { content_type: 'daily', item_id: String(dailyNo) }, e.target, '分享每日一題');
+    showStory(makeDailyCanvas(), `新北政見島-今日補給題-${dailyNo}.png`, dailyLink('story'), { content_type: 'daily', item_id: String(dailyNo) }, e.target, '分享今日補給題');
   } else if (act === 'policy') {
     closeDaily();
     select(todayQ.i);
@@ -3871,10 +4015,10 @@ matchEl.addEventListener('click', (e) => {
 
 // Entry points: two cards after the finder on phones, two chips in the legend on larger screens
 railTrack.querySelector('[data-finder-card]').insertAdjacentHTML('afterend',
-  (todayQ ? `<button type="button" class="finder daily" data-daily-card><span class="t">🏮 每日一題 #${dailyNo}</span><span class="k"></span></button>` : '')
+  (todayQ ? `<button type="button" class="finder daily" data-daily-card><span class="t">🏮 今日補給題 #${dailyNo}</span><span class="k"></span></button>` : '')
   + '<button type="button" class="finder match" data-match-card><span class="t">⇄ 跟朋友比一比</span><span class="k">選你最在意的 3 項，傳給朋友看有幾項一樣</span></button>');
 legendEl.querySelector('[data-finder]').insertAdjacentHTML('afterend',
-  (todayQ ? '<button type="button" class="daily-chip" data-daily>🏮 每日一題</button>' : '')
+  (todayQ ? '<button type="button" class="daily-chip" data-daily>🏮 今日補給題</button>' : '')
   + '<button type="button" class="match-chip" data-match>⇄ 跟朋友比一比</button>');
 railTrack.addEventListener('click', (e) => {
   if (e.target.closest('[data-daily-card]')) openDaily();
@@ -3928,8 +4072,8 @@ const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const highlight = (text, q) => (q ? esc(text).split(esc(q)).join(`<mark>${esc(q)}</mark>`) : esc(text));
 
 const INDEX = {
-  policies: POLICIES.map((p, i) => ({
-    i, title: `${String(i + 1).padStart(2, '0')} ${p.short}`, color: GROUPS[p.group].color,
+  policies: COURSE.map((i) => POLICIES[i]).map((p, k) => ({
+    i: COURSE[k], title: `KM${(k + 1) * 3} ${p.short}`, color: GROUPS[p.group].color,
     fields: [p.summary, ...p.items], haystack: [p.short, p.title, GROUPS[p.group].name, p.summary, ...p.items].join(' '),
   })),
   spots: SPOTS.map((s, i) => ({ i, title: s.name, color: '#0f766e', fields: [s.desc], haystack: [s.name, s.desc].join(' ') })),
@@ -4068,13 +4212,13 @@ function renderMine() {
   const n = visited.size, total = POLICIES.length;
   const marked = POLICIES.flatMap((p, i) => (importantSet().has(p.short) ? [i] : []));
   listEl.innerHTML = `<li class="finder-head">
-      <p><b>已看過 ${n} / ${total} 項政見</b></p>
+      <p><b>已跑 ${kmRun(n)} / ${KM_FULL} km</b>（${n} / ${total} 個補給站）</p>
       <div class="mine-progress"><i style="width:${(n / total) * 100}%"></i></div>
-      ${n === total ? `<label class="home-pick">島民證上的名字
+      ${n === total ? `<label class="home-pick">證書上的名字
         <input data-islander-name maxlength="10" placeholder="可留空" value="${esc(store.get('islanderName'))}"></label>` : ''}
       <div class="acts">${n === total
-        ? '<button type="button" class="primary" data-act="complete-card">領取島民證</button>'
-        : `<button type="button" class="primary" data-act="tour">帶我逛一圈（還差 ${total - n} 項）</button>`}
+        ? '<button type="button" class="primary" data-act="complete-card">領取完賽證書</button>'
+        : `<button type="button" class="primary" data-act="tour">跑一趟全馬（還差 ${total - n} 站）</button>`}
         ${quizEnabled ? '<button type="button" data-act="quiz">政見小測驗</button>' : ''}</div>
     </li>
     <li class="mine-sub">我標記為重要的（${marked.length}）</li>`
@@ -4310,7 +4454,7 @@ function showFirstHint() {
     toastEl.append(' · ', link);
   } else if (todayQ && !(viewDay in dailyLog)) {
     const streak = dailyStreak();
-    showToast(streak ? `今天的題目出爐了 · 你已連續 ${streak} 天，別斷了` : `今天的每日一題出爐了 · 距投票日還有 ${daysLeft} 天`, 9000);
+    showToast(streak ? `今天的題目出爐了 · 你已連續 ${streak} 天，別斷了` : `今天的補給題出爐了 · 距投票日還有 ${daysLeft} 天`, 9000);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = '作答';
@@ -4354,7 +4498,6 @@ function copyLink(btn) {
     .catch(() => showToast('無法自動複製，請直接複製網址列的連結'));
 }
 
-const STORY_FONT = '"PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif';
 const NO_LINE_START = '，。、；：！？）」』…%';
 // Site name and the unofficial note across the top of every story-sized card
 function storyHeader(ctx, W, PAD) {
@@ -4732,7 +4875,7 @@ function openMineStory(opener) {
 }
 
 function openCompleteStory(opener) {
-  showStory(makeCompleteCanvas(), '新北政見島-島民證.png', `${SITE}?utm_source=story&utm_medium=social&utm_campaign=complete`, { content_type: 'complete', item_id: '14' }, opener, '分享島民證');
+  showStory(makeCompleteCanvas(), '新北政見島-全馬完賽證書.png', `${SITE}?utm_source=story&utm_medium=social&utm_campaign=complete`, { content_type: 'complete', item_id: '14' }, opener, '分享完賽證書');
 }
 
 // Islander card for reading all 14: name, card number, completion date, a stamp, every policy ticked,
@@ -4782,10 +4925,10 @@ function makeCompleteCanvas() {
   ctx.restore();
   ctx.fillStyle = '#ffffff';
   ctx.font = `800 64px ${STORY_FONT}`;
-  ctx.fillText('新北政見島 島民證', cx + 56, cy + 34);
+  ctx.fillText('政見全馬 完賽證書', cx + 56, cy + 34);
   ctx.font = `600 24px ${STORY_FONT}`;
   ctx.fillStyle = '#ffe3d3';
-  ctx.fillText('NEW TAIPEI POLICY ISLANDER', cx + 58, cy + 108);
+  ctx.fillText(`NEW TAIPEI POLICY MARATHON · ${KM_FULL} KM FINISHER`, cx + 58, cy + 108);
 
   const fx = cx + 56;
   ctx.fillStyle = '#7a7f87';
@@ -4794,7 +4937,7 @@ function makeCompleteCanvas() {
   ctx.fillStyle = '#1f2328';
   ctx.font = `800 72px ${STORY_FONT}`;
   ctx.fillText(info.name, fx, cy + 240);
-  [['證號', info.id, 0], ['看完日期', info.done, 400]].forEach(([label, value, dx]) => {
+  [['號碼布', info.id, 0], ['完賽日期', info.done, 400]].forEach(([label, value, dx]) => {
     ctx.fillStyle = '#7a7f87';
     ctx.font = `500 28px ${STORY_FONT}`;
     ctx.fillText(label, fx + dx, cy + 360);
@@ -4821,16 +4964,16 @@ function makeCompleteCanvas() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = `800 40px ${STORY_FONT}`;
-  ctx.fillText('看完', 0, -42);
-  ctx.font = `900 60px ${STORY_FONT}`;
-  ctx.fillText('14 項', 0, 10);
+  ctx.fillText('完賽', 0, -42);
+  ctx.font = `900 52px ${STORY_FONT}`;
+  ctx.fillText(String(KM_FULL), 0, 10);
   ctx.font = `700 30px ${STORY_FONT}`;
-  ctx.fillText('新北政見', 0, 60);
+  ctx.fillText('KM', 0, 60);
   ctx.restore();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
-  // Every policy, ticked
+  // Every aid station in course order, its km in the badge
   ctx.strokeStyle = '#f0e4d8';
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -4838,16 +4981,17 @@ function makeCompleteCanvas() {
   ctx.lineTo(cx + cw - 56, cy + 490);
   ctx.stroke();
   const colW = (cw - 112) / 3;
-  POLICIES.forEach((p, i) => {
+  COURSE.forEach((pi, i) => {
+    const p = POLICIES[pi];
     const x = fx + (i % 3) * colW, y = cy + 520 + Math.floor(i / 3) * 88;
     ctx.fillStyle = readableBg(GROUPS[p.group].color);
     ctx.beginPath();
     ctx.arc(x + 22, y + 22, 22, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.font = `700 26px ${STORY_FONT}`;
+    ctx.font = `800 20px ${STORY_FONT}`;
     ctx.textAlign = 'center';
-    ctx.fillText('✓', x + 22, y + 8);
+    ctx.fillText(String((i + 1) * 3), x + 22, y + 11);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#1f2328';
     ctx.font = `700 34px ${STORY_FONT}`;
@@ -4877,10 +5021,10 @@ function makeCompleteCanvas() {
   }
   ctx.fillStyle = '#0f766e';
   ctx.font = `700 40px ${STORY_FONT}`;
-  ctx.fillText('你也來拿一張島民證', PAD, H - 260);
+  ctx.fillText('你也來跑一趟政見全馬', PAD, H - 260);
   ctx.fillStyle = '#5b6370';
   ctx.font = `400 28px ${STORY_FONT}`;
-  ctx.fillText('看完 14 項政見就能領：ntpc-island.github.io', PAD, H - 196);
+  ctx.fillText('跑完 14 個補給站就能領：ntpc-island.github.io', PAD, H - 196);
   ctx.fillText('內容整理自蘇巧慧 2026 競選網站，以官方網站為準', PAD, H - 108);
   return c;
 }
@@ -4892,7 +5036,7 @@ function makeQuizCanvas(score, teaser) {
 }
 // Daily card: the streak, then today's question without its answer
 function makeDailyCanvas() {
-  return makeTeaserCanvas({ eyebrow: `每日一題 #${dailyNo} · ${todayM}/${todayD}`, lead: '我已連續答了', big: String(dailyStreak()), unit: '天',
+  return makeTeaserCanvas({ eyebrow: `今日補給題 #${dailyNo} · ${todayM}/${todayD}`, lead: '我已連續答了', big: String(dailyStreak()), unit: '天',
     verdict: dailyLog[viewDay]?.ok ? '今天答對了，換你' : '今天答錯了，但記住了', teaser: todayQ, footer: '今天的答案在：' });
 }
 function makeTeaserCanvas({ eyebrow, lead, big, unit, verdict, teaser, footer }) {
