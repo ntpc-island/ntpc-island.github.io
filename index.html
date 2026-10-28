@@ -294,7 +294,7 @@
     border-radius: 10px; border: 1px solid #0f766e; background: #0f766e; color: #fff; text-decoration: none; font: inherit;
   }
   /* Election day: sharing and prompts pause; reading stays available (dates in tools/election.json) */
-  body.quiet #card .share, body.quiet [data-act$="-card"], body.quiet [data-q="card"], body.quiet #onboard { display: none !important; }
+  body.quiet #card .share, body.quiet [data-act$="-card"], body.quiet [data-q="card"], body.quiet .share-row, body.quiet #onboard { display: none !important; }
   #quiet-note { display: none; }
   body.quiet #quiet-note {
     display: block; position: fixed; left: 50%; transform: translateX(-50%); top: 96px; z-index: 6; max-width: calc(100% - 32px);
@@ -502,8 +502,8 @@
   #tour .acts button { flex: 1; padding: 8px; font-size: 14px; }
   #tour .acts .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   /* Quiz */
-  #quiz { position: fixed; inset: 0; z-index: 22; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .4); }
-  #quiz[hidden] { display: none; }
+  #quiz, #daily, #match { position: fixed; inset: 0; z-index: 22; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .4); }
+  #quiz[hidden], #daily[hidden], #match[hidden] { display: none; }
   .quiz-box { position: relative; width: min(440px, 100%); max-height: 100%; overflow: auto; padding: 20px; border-radius: 18px; background: var(--card); }
   .quiz-box .close { position: absolute; top: 8px; right: 8px; border: none; background: none; font-size: 22px; padding: 4px 10px; }
   .quiz-box .step { font-size: 12px; color: var(--muted); }
@@ -517,6 +517,28 @@
   .quiz-box .acts button { flex: 1; padding: 10px; }
   .quiz-box .acts .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   .quiz-box .score { font-size: 40px; font-weight: 800; margin: 6px 0; }
+  .quiz-box .acts button:disabled { opacity: .5; }
+  .quiz-box .next { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .quiz-box .streak { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 12px; font-size: 14px; }
+  .quiz-box .streak b { font-size: 18px; letter-spacing: 2px; }
+  .quiz-box .share-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+  .quiz-box .share-row a, .quiz-box .share-row button { padding: 9px 4px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; text-align: center; text-decoration: none; color: var(--ink); background: var(--card); }
+  .quiz-box .share-row .threads { background: #101010; border-color: #101010; color: #fff; }
+  .quiz-box .share-row .line { background: #06c755; border-color: #06c755; color: #fff; }
+  .quiz-box .picks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .quiz-box .picks button { padding: 8px 11px; border-radius: 999px; font-size: 14px; border-left: 4px solid var(--c); }
+  .quiz-box .picks button[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: #fff; font-weight: 700; }
+  .quiz-box .name { display: grid; gap: 4px; margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .quiz-box .name input { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 16px; }
+  .quiz-box .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .quiz-box .cols small { color: var(--muted); }
+  .quiz-box .match-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+  .quiz-box .match-list button { width: 100%; display: flex; align-items: center; gap: 6px; padding: 8px 10px; font-size: 14px; text-align: left; }
+  .quiz-box .match-list i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .quiz-box .match-list b { margin-left: auto; font-size: 11px; color: #2f855a; }
+  .legend .daily-chip { color: #fff; background: #c2410c; border-color: #c2410c; font-weight: 600; }
+  .legend .daily-chip.done { color: #9a3412; background: #fff3e8; border-color: #fdba74; }
+  .legend .match-chip { color: #fff; background: #3b77c4; border-color: #3b77c4; font-weight: 600; }
   #index-list .mine-progress { height: 8px; border-radius: 8px; background: #eee6d8; overflow: hidden; margin: 6px 0 10px; }
   #index-list .mine-progress i { display: block; height: 100%; background: #2f855a; }
   #index-list .mine-sub { padding: 10px 8px 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
@@ -617,6 +639,10 @@
     }
     .rail-track .finder { background: #0f766e; color: #fff; border-color: #0f766e; }
     .rail-track .finder .k { color: #d5f3ee; }
+    .rail-track .finder.daily { background: #c2410c; border-color: #c2410c; }
+    .rail-track .finder.daily .k { color: #ffedd5; }
+    .rail-track .finder.match { background: #3b77c4; border-color: #3b77c4; }
+    .rail-track .finder.match .k { color: #dbe7f7; }
     body:not(.rail-off) #toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
     body.touring #toast { bottom: calc(190px + env(safe-area-inset-bottom)); }
     #tour { bottom: calc(12px + env(safe-area-inset-bottom)); padding: 12px 14px; max-height: 58%; overflow: auto; }
@@ -821,6 +847,18 @@
   <div class="quiz-box">
     <button class="close" id="quiz-close" type="button" aria-label="關閉">×</button>
     <div id="quiz-body"></div>
+  </div>
+</div>
+<div id="daily" role="dialog" aria-modal="true" aria-label="每日一題" hidden>
+  <div class="quiz-box">
+    <button class="close" id="daily-close" type="button" aria-label="關閉">×</button>
+    <div id="daily-body"></div>
+  </div>
+</div>
+<div id="match" role="dialog" aria-modal="true" aria-label="跟朋友比一比" hidden>
+  <div class="quiz-box">
+    <button class="close" id="match-close" type="button" aria-label="關閉">×</button>
+    <div id="match-body"></div>
   </div>
 </div>
 <p id="quiet-note">今天是投票日，本站暫停分享功能，記得去投票</p>
@@ -3012,7 +3050,13 @@ document.getElementById('tour-start').addEventListener('click', () => startTour(
 document.getElementById('tour-start-rail').addEventListener('click', () => startTour());
 
 // ---------- Quiz: questions drawn only from the official policy items ----------
-// Each `must` is quoted from that policy's items, so a question disappears if the official text changes
+// Each `must` is quoted from that policy's summary or items, so a question disappears if the official text changes
+function officialQuestion(x) {
+  const i = POLICIES.findIndex((p) => p.short === x.short);
+  const item = POLICIES[i] && [POLICIES[i].summary, ...POLICIES[i].items].find((t) => t.includes(x.must));
+  if (!item) console.warn(`quiz: ${x.short} no longer says ${x.must}`);
+  return item ? [{ ...x, i, item }] : [];
+}
 const quizEnabled = true;
 const QUIZ = [
   { q: '敬老卡每月點數，政見要提高到多少？', choices: ['600 點', '800 點', '1,000 點'], answer: 2, short: '長幼福利', must: '敬老卡提高到每月 1,000 點' },
@@ -3023,12 +3067,7 @@ const QUIZ = [
   { q: '教師節禮金，政見要調升到多少？', choices: ['1,000 元', '1,500 元', '2,000 元'], answer: 2, short: '七大教育', must: '教師節禮金調升至 2,000 元' },
   { q: '退休煤礦工慰問金，每年要從 2,000 元提高到多少？', choices: ['3,000 元', '4,000 元', '6,000 元'], answer: 2, short: '勞工權益', must: '提高為 6,000 元' },
   { q: '企業組隊設置托育，首三年的虧損補助多少？', choices: ['30%', '50%', '70%'], answer: 1, short: '家庭照顧', must: '首三年虧損補助 50%' },
-].flatMap((x) => {
-  const i = POLICIES.findIndex((p) => p.short === x.short);
-  const item = POLICIES[i]?.items.find((t) => t.includes(x.must));
-  if (!item) console.warn(`quiz: ${x.short} no longer says ${x.must}`);
-  return item ? [{ ...x, i, item }] : [];
-});
+].flatMap(officialQuestion);
 const quizEl = document.getElementById('quiz'), quizBody = document.getElementById('quiz-body');
 let quizState = null; // { n, score, answered, missed }
 const quizVerdict = (score) => (score === QUIZ.length ? '全對！你很懂新北政見'
@@ -3085,11 +3124,6 @@ quizEl.addEventListener('click', (e) => {
       { content_type: 'quiz', item_id: String(quizState.score) }, e.target, '分享測驗成績');
   }
 });
-if (quizEnabled) {
-  railTrack.querySelector('[data-finder-card]').insertAdjacentHTML('afterend',
-    `<button type="button" class="finder" data-quiz-card style="background:#3b77c4;border-color:#3b77c4"><span class="t">？政見小測驗</span><span class="k">${QUIZ.length} 題，測測你有多懂新北政見</span></button>`);
-  railTrack.querySelector('[data-quiz-card]').addEventListener('click', openQuiz);
-}
 
 let railFocus = -1;
 function updateRailFocus() {
@@ -3390,6 +3424,9 @@ const LAUNCH = '2026-10-22';
 const dayParam = new URLSearchParams(location.search).get('day');
 const viewDay = /^\d{4}-\d{2}-\d{2}$/.test(dayParam ?? '') ? dayParam : taipeiToday;
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+const addDays = (day, k) => new Date(Date.parse(day) + k * 86400000).toISOString().slice(0, 10);
+// Days this browser answered the daily question: { 'YYYY-MM-DD': { k: choice, ok: answered right } }
+const dailyLog = (() => { try { return JSON.parse(store.get('dailyLog') || '{}'); } catch { return {}; } })();
 const daysLeft = ELECTION.date ? daysBetween(viewDay, ELECTION.date) : -1;
 const litCount = ELECTION.date ? Math.max(0, Math.min(daysBetween(LAUNCH, viewDay), daysBetween(LAUNCH, ELECTION.date)) + 1) : 0;
 const countdownEl = document.getElementById('countdown');
@@ -3397,6 +3434,7 @@ if (daysLeft > 0) countdownEl.innerHTML = ` · <a href="vote/">距投票日還�
 else if (daysLeft === 0) countdownEl.innerHTML = ' · <a href="vote/">今天投票日</a>';
 
 const lanterns = [];
+let lightLantern = () => {};
 if (!new URLSearchParams(location.search).has('og')) {
   const glowTex = (() => {
     const c = document.createElement('canvas');
@@ -3414,10 +3452,11 @@ if (!new URLSearchParams(location.search).has('og')) {
   const bodyMat = new THREE.MeshBasicMaterial({ color: '#ffb35c' });
   const topMat = new THREE.MeshBasicMaterial({ color: '#d9622b' });
   const topGeo = new THREE.CylinderGeometry(0.27, 0.27, 0.06, 8);
+  const mineMat = new THREE.MeshBasicMaterial({ color: '#e8452c' });
   const lrand = seeded(1128);
   for (let k = 0; k < litCount; k++) {
     const g = new THREE.Group();
-    g.add(new THREE.Mesh(bodyGeo, bodyMat));
+    g.add(new THREE.Mesh(bodyGeo, addDays(LAUNCH, k) in dailyLog ? mineMat : bodyMat));
     const top = new THREE.Mesh(topGeo, topMat);
     top.position.y = 0.26;
     g.add(top);
@@ -3428,7 +3467,7 @@ if (!new URLSearchParams(location.search).has('og')) {
     const [x, z] = toXZ(-40 + lrand() * 90, 12 + lrand() * 6);
     const height = 3.5 + lrand() * 4.5;
     g.position.set(x, height, z);
-    g.userData = { height, phase: lrand() * Math.PI * 2, newest: k === litCount - 1 };
+    g.userData = { height, phase: lrand() * Math.PI * 2, newest: k === litCount - 1, day: addDays(LAUNCH, k) };
     if (camera.aspect < 0.8) g.scale.setScalar(1.7); // phones see the sea from farther away
     scene.add(g);
     lanterns.push(g);
@@ -3441,6 +3480,10 @@ if (!new URLSearchParams(location.search).has('og')) {
     g.rotation.z = Math.sin(t * 0.5 + u.phase) * 0.08;
     if (u.newest) g.children[2].scale.setScalar(1.8 + Math.sin(t * 2.4) * 0.35);
   }));
+  lightLantern = (day) => {
+    const g = lanterns.find((x) => x.userData.day === day);
+    if (g) g.children[0].material = mineMat;
+  };
 }
 
 // ---------- Analytics (GA4 events; no-ops if the tag is blocked) ----------
@@ -3448,6 +3491,241 @@ const track = (name, params = {}) => window.gtag?.('event', name, params);
 const currentItem = () => (selected >= 0
   ? { content_type: 'policy', item_id: POLICIES[selected].short }
   : { content_type: 'spot', item_id: SPOTS[selectedSpot]?.name });
+
+// ---------- Daily question: one a day, the same for everyone, until the day before voting ----------
+// A reason to come back tomorrow and a result worth posting: the shared text shows how you did, never the answer.
+// Answering lights that day's sky lantern in red. Kept only in this browser.
+const DAILY_START = '2026-10-29';
+const DAILY = [
+  { q: '早產兒家庭照顧津貼，政見要發多少？', choices: ['1 萬元', '3 萬元', '5 萬元'], answer: 1, short: '長幼福利', must: '早產兒家庭照顧津貼 3 萬元' },
+  { q: '龍洞要打造成什麼？', choices: ['全年潛水基地', '國際遊艇泊區', '觀光列車車站'], answer: 0, short: '新皇冠海岸', must: '龍洞打造全年潛水基地' },
+  { q: '認養毛孩，政見提供什麼補助？', choices: ['第一年半額', '三年全額', '終身全額'], answer: 2, short: '毛孩照顧', must: '認養毛孩享終身全額補助' },
+  { q: '青農創業貸款的免息額度，一般青農要提高到多少？', choices: ['300 萬', '500 萬', '800 萬'], answer: 1, short: '青年支持', must: '一般青農 200 萬→500 萬' },
+  { q: '出院後的居家服務與輔具，政見採用什麼原則？', choices: ['先審後用', '先用後審', '先自費再退款'], answer: 1, short: '三大長照', must: '先用後審' },
+  { q: '6 歲以下免費接種的是哪兩種疫苗？', choices: ['流感、肺炎鏈球菌', '腸病毒、輪狀病毒', '水痘、A 型肝炎'], answer: 1, short: '長幼福利', must: '6 歲以下免費接種腸病毒、輪狀病毒疫苗' },
+  { q: '要推動復駛、重現百年礦業遺產的是？', choices: ['金九台車', '平溪天燈列車', '深坑老街公車'], answer: 0, short: '鑽石山城', must: '推動金九台車復駛' },
+  { q: '友善家庭的企業，政見最高獎勵多少？', choices: ['30 萬', '50 萬', '100 萬'], answer: 2, short: '家庭照顧', must: '獎勵友善家庭企業最高 100 萬' },
+  { q: '都更政見要成立什麼新機關？', choices: ['都市更新局', '住宅發展署', '捷運建設處'], answer: 0, short: '都更住宅', must: '成立都市更新局' },
+  { q: '原住民族族人假牙補助，從幾歲開始？', choices: ['45 歲以上', '55 歲以上', '65 歲以上'], answer: 1, short: '原住民族', must: '55 歲以上族人假牙補助最高 5 萬元' },
+  { q: '政見要打造「幾公分視角」的友善城市？', choices: ['75 公分', '95 公分', '120 公分'], answer: 1, short: '家庭照顧', must: '95 公分視角' },
+  { q: '台北港要興建什麼博物館？', choices: ['退役潛艦博物館', '海洋生物博物館', '礦業博物館'], answer: 0, short: '新皇冠海岸', must: '台北港興建退役潛艦博物館' },
+  { q: '技術士證照獎勵金，政見要怎麼調整？', choices: ['增加 50%', '翻倍', '改成一次性補助'], answer: 1, short: '青年支持', must: '技術士證照獎勵金翻倍' },
+  { q: '為照顧都會客家長輩，要放寬設置什麼？', choices: ['伯公照護站', '客家樂齡學堂', '社區日照中心'], answer: 0, short: '四大客家', must: '放寬設置伯公照護站' },
+  { q: '新皇冠計畫要串連幾顆海岸寶石？', choices: ['5 顆', '8 顆', '12 顆'], answer: 1, short: '新皇冠海岸', must: '八顆海岸寶石' },
+  { q: '政見要補貼什麼時段開診的動物醫院？', choices: ['假日', '夜間', '清晨'], answer: 1, short: '毛孩照顧', must: '補貼夜間開診動物醫院' },
+  { q: '「淡蘭土地公」朝聖文化，要開發什麼？', choices: ['專屬御朱印帳', '朝聖護照 App', '土地公公仔'], answer: 0, short: '鑽石山城', must: '開發專屬御朱印帳' },
+  { q: '0–6 歲孩童看醫生，政見要免除什麼？', choices: ['掛號費', '門診和住院部分負擔', '藥費'], answer: 1, short: '長幼福利', must: '0–6 歲孩童看醫生免門診和住院部分負擔' },
+  { q: '老街與特色商圈的振興計畫叫什麼？', choices: ['一商圈一特色', '一區一亮點', '百工百業'], answer: 0, short: '產業升級', must: '「一商圈一特色」振興計畫' },
+  { q: '新北 65 歲以上人口，已經突破多少？', choices: ['52 萬', '82 萬', '102 萬'], answer: 1, short: '三大長照', must: '新北 65 歲以上人口突破 82 萬' },
+  { q: '自行車道每幾公里要設一個簡易休息站？', choices: ['3 公里', '5 公里', '10 公里'], answer: 1, short: '新皇冠海岸', must: '自行車道每 5 公里設簡易休息站' },
+  { q: '政見要在烏來建置什麼？', choices: ['公共托育中心', '國際會展中心', '原住民族博物館'], answer: 0, short: '原住民族', must: '建置烏來公共托育中心' },
+  { q: '新北市原住民族的人均預算，政見要怎麼調整？', choices: ['增加 20%', '增加 50%', '加倍'], answer: 2, short: '原住民族', must: '人均預算加倍' },
+  { q: '發展 AI 智慧照顧，要用什麼機制降低導入門檻？', choices: ['以租代買', '免費贈送', '分期零利率'], answer: 0, short: '三大長照', must: '建立以租代買機制降低導入門檻' },
+  { q: '核四重件碼頭要轉型成什麼？', choices: ['貨櫃轉運港', '國際級遊艇與休閒船艇泊區', '離岸風電基地'], answer: 1, short: '新皇冠海岸', must: '核四重件碼頭轉型為國際級遊艇與休閒船艇泊區' },
+  { q: '新北有超過多少位勞工？', choices: ['116 萬', '216 萬', '316 萬'], answer: 1, short: '勞工權益', must: '超過 216 萬位勞工' },
+  { q: '要擴大使用範圍的是哪一種幣？', choices: ['客家幣', '新北幣', '觀光幣'], answer: 0, short: '四大客家', must: '擴大客家幣使用範圍' },
+  { q: '產業升級政見要新建什麼？', choices: ['新北市國際會展中心', '新北國際機場', '新北科技大學'], answer: 0, short: '產業升級', must: '新建新北市國際會展中心' },
+  { q: '縫合五大山系與海岸線步道，要建構什麼？', choices: ['新北大縱走', '北台灣環島線', '雙北環山步道'], answer: 0, short: '鑽石山城', must: '建構「新北大縱走」' },
+].flatMap(officialQuestion).concat(QUIZ);
+const dailyNo = daysBetween(DAILY_START, viewDay) + 1; // #1 on the first day
+const dailyOpen = dailyNo >= 1 && daysLeft > 0 && !isQuiet;
+const todayQ = dailyOpen ? DAILY[(dailyNo - 1) % DAILY.length] : null;
+const dailyEl = document.getElementById('daily'), dailyBody = document.getElementById('daily-body');
+const [, todayM, todayD] = viewDay.split('-').map(Number);
+
+function dailyStreak() {
+  let n = 0, day = viewDay in dailyLog ? viewDay : addDays(viewDay, -1);
+  while (day in dailyLog) [n, day] = [n + 1, addDays(day, -1)];
+  return n;
+}
+// One mark per day since the first question, at most the last seven: right, wrong, or missed
+function dailyMarks() {
+  const from = Math.max(1, dailyNo - 6);
+  return Array.from({ length: dailyNo - from + 1 }, (_, k) => {
+    const day = addDays(DAILY_START, from - 1 + k);
+    return day in dailyLog ? (dailyLog[day].ok ? '🟧' : '⬜') : '▫️';
+  }).join('');
+}
+const dailyLink = (source) => `${SITE}?utm_source=${source}&utm_medium=social&utm_campaign=daily#daily`;
+const dailyShareText = (source) => `新北政見島 每日一題 #${dailyNo}\n${dailyMarks()} 連續 ${dailyStreak()} 天\n今天這題你答得出來嗎？\n${dailyLink(source)}`;
+
+function renderDaily() {
+  const x = todayQ, mine = dailyLog[viewDay];
+  const hoursLeft = 24 - new Date(Date.now() + 8 * 3600e3).getUTCHours();
+  dailyBody.innerHTML = `<div class="step">🏮 每日一題 #${dailyNo} · ${todayM}/${todayD}</div>
+    <h3>${x.q}</h3>
+    <div class="choices">${x.choices.map((c, k) => `<button type="button" data-c="${k}"${mine ? ` class="${k === x.answer ? 'right' : k === mine.k ? 'wrong' : ''}" disabled` : ''}>${c}</button>`).join('')}</div>
+    ${mine ? `<p class="why">${mine.ok ? '答對了！' : `答案是 ${x.choices[x.answer]}。`}政見原文：「${x.item}」</p>
+      <div class="streak"><b>${dailyMarks()}</b><span>連續 ${dailyStreak()} 天 · 你點亮了今天的天燈</span></div>
+      <p class="next">明天的題目約 ${hoursLeft} 小時後出爐 · 距投票日還有 ${daysLeft} 天</p>
+      <div class="share-row" data-d="share-row">
+        <a class="threads" data-d="threads" href="https://www.threads.net/intent/post?text=${encodeURIComponent(dailyShareText('threads'))}" target="_blank" rel="noopener">Threads</a>
+        <a class="line" data-d="line" href="https://line.me/R/share?text=${encodeURIComponent(dailyShareText('line'))}" target="_blank" rel="noopener">LINE</a>
+        <button type="button" data-d="copy">複製</button>
+        <button type="button" data-d="card">圖卡</button>
+      </div>
+      <div class="acts"><button type="button" data-d="policy">看這項政見</button><button type="button" data-d="quiz">挑戰 ${QUIZ.length} 題小測驗</button></div>`
+      : '<p class="next">答完就能點亮今天的天燈，每天一題，連續答下去</p>'}`;
+}
+function openDaily() {
+  if (!todayQ) return;
+  dailyEl.hidden = false;
+  renderDaily();
+  dailyBody.querySelector('button:not([disabled]), a')?.focus();
+  track('daily_open', { item_id: String(dailyNo), answered: viewDay in dailyLog });
+}
+function closeDaily() { dailyEl.hidden = true; }
+function updateDailyEntry() {
+  const done = viewDay in dailyLog;
+  const card = railTrack.querySelector('[data-daily-card]');
+  if (card) card.querySelector('.k').textContent = done ? `✓ 已作答 · 連續 ${dailyStreak()} 天，明天再來` : '30 秒答一題，點亮今天的天燈';
+  legendEl.querySelector('[data-daily]')?.classList.toggle('done', done);
+}
+dailyEl.addEventListener('click', (e) => {
+  if (e.target === dailyEl || e.target.closest('#daily-close')) return closeDaily();
+  const choice = e.target.closest('[data-c]');
+  if (choice && !(viewDay in dailyLog)) {
+    const k = Number(choice.dataset.c);
+    dailyLog[viewDay] = { k, ok: k === todayQ.answer };
+    store.set('dailyLog', JSON.stringify(dailyLog));
+    lightLantern(viewDay);
+    toastEl.hidden = true;
+    track('daily_answer', { item_id: String(dailyNo), correct: k === todayQ.answer, streak: dailyStreak() });
+    renderDaily();
+    updateDailyEntry();
+    return;
+  }
+  const act = e.target.closest('[data-d]')?.dataset.d;
+  const share = (method) => track('share', { method, content_type: 'daily', item_id: String(dailyNo) });
+  if (act === 'threads' || act === 'line') share(act);
+  else if (act === 'copy') {
+    share('copy_link');
+    navigator.clipboard?.writeText(dailyShareText('copy_link')).then(() => showToast('已複製，貼到貼文或訊息裡'), () => showToast('無法複製，請改用其他分享方式'));
+  } else if (act === 'card') {
+    showStory(makeDailyCanvas(), `新北政見島-每日一題-${dailyNo}.png`, dailyLink('story'), { content_type: 'daily', item_id: String(dailyNo) }, e.target, '分享每日一題');
+  } else if (act === 'policy') {
+    closeDaily();
+    select(todayQ.i);
+  } else if (act === 'quiz') {
+    closeDaily();
+    openQuiz();
+  }
+});
+
+// ---------- Compare with a friend: pick your three, send the link, see how many you share ----------
+// The picks travel in the link (#match/3-7-12/name), so nothing is stored anywhere but the two browsers
+const matchEl = document.getElementById('match'), matchBody = document.getElementById('match-body');
+let matchState = null; // { friend: [i...], friendName, picks: [i...], done }
+const parsePicks = (text) => [...new Set((text ?? '').split('-').filter((t) => /^\d+$/.test(t)).map(Number))].filter((i) => POLICIES[i]).slice(0, 3);
+function savedPicks() {
+  const saved = parsePicks(store.get('myTop3'));
+  if (saved.length) return saved;
+  return POLICIES.flatMap((p, i) => (importantSet().has(p.short) ? [i] : [])).slice(0, 3);
+}
+const matchLink = (source) => {
+  const name = store.get('matchName').trim();
+  return `${SITE}?utm_source=${source}&utm_medium=social&utm_campaign=match#${encodeURI(`match/${matchState.picks.join('-')}${name ? `/${name}` : ''}`)}`;
+};
+const matchShareText = (source) => `我最在意的 3 項新北政見：${matchState.picks.map((i) => POLICIES[i].short).join('、')}\n你跟我一樣嗎？選 3 項來比比看\n${matchLink(source)}`;
+const MATCH_VERDICT = ['剛好互補，可以聊聊彼此在意什麼', '有 1 項交集', '很有共鳴，2 項一樣', '政見知己，3 項全部一樣！'];
+
+function renderMatch() {
+  const { friend, friendName, picks, done } = matchState;
+  const who = esc(friendName || '朋友');
+  if (!done) {
+    matchBody.innerHTML = `<div class="step">跟朋友比一比</div>
+      <h3>${friend.length ? `${who}選了 3 項最在意的政見，你呢？` : '14 項政見裡，你最在意哪 3 項？'}</h3>
+      <div class="picks">${POLICIES.map((p, i) => `<button type="button" data-p="${i}" aria-pressed="${picks.includes(i)}" style="--c:${GROUPS[p.group].color}">${p.short}</button>`).join('')}</div>
+      <label class="name">你的暱稱（選填，會出現在分享連結裡）<input data-m-name maxlength="8" value="${esc(store.get('matchName'))}" placeholder="例如：板橋小明"></label>
+      ${matchState.full ? '<p class="next">最多選 3 項，先點已選的取消一項</p>' : ''}
+      <div class="acts"><button type="button" class="primary" data-m="done"${picks.length === 3 ? '' : ' disabled'}>${picks.length === 3 ? (friend.length ? '看我們有幾項一樣' : '完成') : `還要選 ${3 - picks.length} 項`}</button></div>`;
+    return;
+  }
+  const same = picks.filter((i) => friend.includes(i));
+  const list = (ids, mark) => `<ul class="match-list">${ids.map((i) => `<li><button type="button" data-open="${i}"><i style="background:${GROUPS[POLICIES[i].group].color}"></i>${POLICIES[i].short}${mark && same.includes(i) ? ' <b>一樣</b>' : ''}</button></li>`).join('')}</ul>`;
+  matchBody.innerHTML = `<div class="step">跟朋友比一比</div>
+    ${friend.length ? `<div class="score">${same.length} / 3</div><p>${MATCH_VERDICT[same.length]}</p>
+      <div class="cols"><div><small>${who}</small>${list(friend, true)}</div><div><small>你</small>${list(picks, true)}</div></div>`
+    : `<h3>你最在意的 3 項</h3>${list(picks)}`}
+    <p class="next">${friend.length ? '換你傳給別人，看看誰跟你最像' : '傳給朋友或家人，看看你們有幾項一樣'}</p>
+    <div class="share-row">
+      <a class="threads" data-m="threads" href="https://www.threads.net/intent/post?text=${encodeURIComponent(matchShareText('threads'))}" target="_blank" rel="noopener">Threads</a>
+      <a class="line" data-m="line" href="https://line.me/R/share?text=${encodeURIComponent(matchShareText('line'))}" target="_blank" rel="noopener">LINE</a>
+      <button type="button" data-m="copy">複製</button>
+      <button type="button" data-m="card">圖卡</button>
+    </div>
+    <div class="acts"><button type="button" data-m="redo">重選</button></div>`;
+}
+function openMatch(friendText, friendName) {
+  const friend = parsePicks(friendText);
+  matchState = { friend: friend.length === 3 ? friend : [], friendName: (friendName ?? '').slice(0, 8), picks: savedPicks(), done: false };
+  matchEl.hidden = false;
+  renderMatch();
+  matchBody.querySelector('button')?.focus();
+  track('match_open', { from_friend: matchState.friend.length === 3 });
+}
+function closeMatch() { matchEl.hidden = true; }
+matchEl.addEventListener('input', (e) => {
+  if (e.target.matches('[data-m-name]')) store.set('matchName', e.target.value);
+});
+matchEl.addEventListener('click', (e) => {
+  if (e.target === matchEl || e.target.closest('#match-close')) return closeMatch();
+  const pick = e.target.closest('[data-p]');
+  if (pick) {
+    const i = Number(pick.dataset.p), { picks } = matchState;
+    if (picks.includes(i)) picks.splice(picks.indexOf(i), 1);
+    else if (picks.length < 3) picks.push(i);
+    matchState.full = !picks.includes(i) && picks.length === 3;
+    return renderMatch();
+  }
+  const open = e.target.closest('[data-open]');
+  if (open) {
+    closeMatch();
+    return select(Number(open.dataset.open));
+  }
+  const act = e.target.closest('[data-m]')?.dataset.m;
+  const share = (method) => track('share', { method, content_type: 'match', item_id: matchState.picks.join('-') });
+  if (act === 'done') {
+    matchState.done = true;
+    store.set('myTop3', matchState.picks.join('-'));
+    const same = matchState.picks.filter((i) => matchState.friend.includes(i)).length;
+    track('match_complete', { from_friend: matchState.friend.length === 3, overlap: matchState.friend.length ? same : -1 });
+    renderMatch();
+  } else if (act === 'redo') {
+    matchState.done = false;
+    renderMatch();
+  } else if (act === 'threads' || act === 'line') share(act);
+  else if (act === 'copy') {
+    share('copy_link');
+    navigator.clipboard?.writeText(matchShareText('copy_link')).then(() => showToast('已複製，貼到貼文或訊息裡'), () => showToast('無法複製，請改用其他分享方式'));
+  } else if (act === 'card') {
+    const name = store.get('matchName').trim();
+    const canvas = makePersonaCanvas(null, {
+      eyebrow: name ? `${name}的新北政見` : '跟我比一比',
+      heading: '我最在意的 3 項政見',
+      picks: matchState.picks.map((i) => ({ i, text: keyPointOf(POLICIES[i]) })),
+      cta: '你跟我一樣嗎？選 3 項來比比看',
+    });
+    showStory(canvas, '新北政見島-我最在意的3項.png', matchLink('story'), { content_type: 'match', item_id: matchState.picks.join('-') }, e.target, '分享我的 3 項');
+  }
+});
+
+// Entry points: two cards after the finder on phones, two chips in the legend on larger screens
+railTrack.querySelector('[data-finder-card]').insertAdjacentHTML('afterend',
+  (todayQ ? `<button type="button" class="finder daily" data-daily-card><span class="t">🏮 每日一題 #${dailyNo}</span><span class="k"></span></button>` : '')
+  + '<button type="button" class="finder match" data-match-card><span class="t">⇄ 跟朋友比一比</span><span class="k">選你最在意的 3 項，傳給朋友看有幾項一樣</span></button>');
+legendEl.querySelector('[data-finder]').insertAdjacentHTML('afterend',
+  (todayQ ? '<button type="button" class="daily-chip" data-daily>🏮 每日一題</button>' : '')
+  + '<button type="button" class="match-chip" data-match>⇄ 跟朋友比一比</button>');
+railTrack.addEventListener('click', (e) => {
+  if (e.target.closest('[data-daily-card]')) openDaily();
+  else if (e.target.closest('[data-match-card]')) openMatch();
+});
+legendEl.addEventListener('click', (e) => {
+  if (e.target.closest('[data-daily]')) openDaily();
+  else if (e.target.closest('[data-match]')) openMatch();
+});
+updateDailyEntry();
 
 // LINE and Facebook read the Open Graph tags of the share page, so the preview shows this item
 function socialLinks() {
@@ -3474,6 +3752,8 @@ function applyHash() {
   else if (kind === 'persona' && PERSONAS.some((x) => x.key === name)) openFinder('persona', name, extra);
   else if (kind === 'district' && DISTRICTS.includes(name)) openFinder('district', name);
   else if (kind === 'quiz' && quizEnabled) openQuiz();
+  else if (kind === 'daily') openDaily();
+  else if (kind === 'match') openMatch(name, extra);
 }
 addEventListener('hashchange', applyHash);
 
@@ -3869,6 +4149,14 @@ function showFirstHint() {
     link.href = `updates/#${latestRelease.date}`;
     link.textContent = '看更新紀錄';
     toastEl.append(' · ', link);
+  } else if (todayQ && !(viewDay in dailyLog)) {
+    const streak = dailyStreak();
+    showToast(streak ? `今天的題目出爐了 · 你已連續 ${streak} 天，別斷了` : `今天的每日一題出爐了 · 距投票日還有 ${daysLeft} 天`, 9000);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '作答';
+    btn.addEventListener('click', () => { toastEl.hidden = true; openDaily(); });
+    toastEl.append(' ', btn);
   } else if (lanterns.length && daysLeft > 0 && lanternSeen && lanternSeen < viewDay) {
     showToast(`海上今天又多了一盞天燈 · 距投票日還有 ${daysLeft} 天`, 7000);
   }
@@ -4440,6 +4728,15 @@ function makeCompleteCanvas() {
 
 // Quiz score card: the score, then one question with its choices but no answer
 function makeQuizCanvas(score, teaser) {
+  return makeTeaserCanvas({ eyebrow: '新北政見小測驗', lead: '我答對了', big: String(score), unit: `/ ${QUIZ.length} 題`,
+    verdict: quizVerdict(score), teaser, footer: `答案和另外 ${QUIZ.length - 1} 題都在：` });
+}
+// Daily card: the streak, then today's question without its answer
+function makeDailyCanvas() {
+  return makeTeaserCanvas({ eyebrow: `每日一題 #${dailyNo} · ${todayM}/${todayD}`, lead: '我已連續答了', big: String(dailyStreak()), unit: '天',
+    verdict: dailyLog[viewDay]?.ok ? '今天答對了，換你' : '今天答錯了，但記住了', teaser: todayQ, footer: '今天的答案在：' });
+}
+function makeTeaserCanvas({ eyebrow, lead, big, unit, verdict, teaser, footer }) {
   const W = 1080, H = 1920, PAD = 90;
   const c = document.createElement('canvas');
   c.width = W;
@@ -4453,19 +4750,19 @@ function makeQuizCanvas(score, teaser) {
   storyHeader(ctx, W, PAD);
   ctx.fillStyle = '#3b77c4';
   ctx.font = `700 46px ${STORY_FONT}`;
-  ctx.fillText('新北政見小測驗', PAD, 230);
+  ctx.fillText(eyebrow, PAD, 230);
   ctx.fillStyle = '#1f2328';
   ctx.font = `800 96px ${STORY_FONT}`;
-  ctx.fillText('我答對了', PAD, 300);
+  ctx.fillText(lead, PAD, 300);
   ctx.font = `900 260px ${STORY_FONT}`;
-  ctx.fillText(String(score), PAD - 8, 400);
-  const w = ctx.measureText(String(score)).width;
+  ctx.fillText(big, PAD - 8, 400);
+  const w = ctx.measureText(big).width;
   ctx.fillStyle = '#5b6370';
   ctx.font = `700 96px ${STORY_FONT}`;
-  ctx.fillText(`/ ${QUIZ.length} 題`, PAD + w + 24, 530);
+  ctx.fillText(unit, PAD + w + 24, 530);
   ctx.fillStyle = '#3d434b';
   ctx.font = `500 44px ${STORY_FONT}`;
-  ctx.fillText(quizVerdict(score), PAD, 700);
+  ctx.fillText(verdict, PAD, 700);
 
   let y = 830;
   ctx.fillStyle = '#ffffff';
@@ -4493,7 +4790,7 @@ function makeQuizCanvas(score, teaser) {
   });
   ctx.fillStyle = '#1f2328';
   ctx.font = `700 40px ${STORY_FONT}`;
-  ctx.fillText(`答案和另外 ${QUIZ.length - 1} 題都在：`, PAD, H - 250);
+  ctx.fillText(footer, PAD, H - 250);
   ctx.fillStyle = '#3b77c4';
   ctx.fillText('ntpc-island.github.io', PAD, H - 196);
   ctx.fillStyle = '#5b6370';
