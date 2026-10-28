@@ -501,6 +501,13 @@
   #tour .acts { display: flex; gap: 8px; }
   #tour .acts button { flex: 1; padding: 8px; font-size: 14px; }
   #tour .acts .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* Between stations the panel is just the running line and the controls */
+  #tour.running h3, #tour.running .tour-summary, #tour.running .tour-key, #tour.running .tour-items, #tour.running .bar,
+  #tour.running .tour-tag, #tour.running #tour-open { display: none; }
+  #tour.running .step { margin-bottom: 8px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  body.running #labels { display: none; }
+  /* During the run the panel holds the bottom of the screen; messages show at the top instead */
+  body.touring #toast { top: calc(110px + env(safe-area-inset-top)); bottom: auto; }
   /* Quiz */
   #quiz, #daily, #match { position: fixed; inset: 0; z-index: 22; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 18, 22, .4); }
   #quiz[hidden], #daily[hidden], #match[hidden] { display: none; }
@@ -644,7 +651,6 @@
     .rail-track .finder.match { background: #3b77c4; border-color: #3b77c4; }
     .rail-track .finder.match .k { color: #dbe7f7; }
     body:not(.rail-off) #toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
-    body.touring #toast { bottom: calc(190px + env(safe-area-inset-bottom)); }
     #tour { bottom: calc(12px + env(safe-area-inset-bottom)); padding: 12px 14px; max-height: 58%; overflow: auto; }
     #tour h3 { font-size: 17px; }
     #tour .tour-summary { font-size: 13px; margin-bottom: 6px; }
@@ -786,7 +792,7 @@
 </div>
 </noscript>
 <!-- seo:noscript:end -->
-<div id="stage" role="img" aria-label="14 座六邊形島嶼拼成一座新北島的 3D 政見地圖，點選島嶼可查看政見內容"></div>
+<div id="stage" role="img" aria-label="新北城市馬拉松的 3D 政見地圖：賽道繞過城市，沿路 14 個補給站各代表一項政見，點選補給站可查看政見內容"></div>
 <div id="labels"></div>
 <div class="scrim" aria-hidden="true"></div>
 <header>
@@ -796,19 +802,19 @@
     <div class="legend" id="legend" role="group" aria-label="依分類篩選"></div>
   </div>
   <a id="text-link" href="policy/">文字地圖</a>
-  <button id="islands-quick" type="button">政見島</button>
+  <button id="islands-quick" type="button">賽道</button>
   <button id="menu-toggle" type="button" aria-expanded="false" aria-controls="header-actions" aria-label="開啟選單">☰ 選單</button>
   <div class="actions" id="header-actions">
     <button id="index-toggle" type="button" aria-expanded="false" aria-controls="index">☰ 清單</button>
     <button id="follow-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="follow-menu" aria-label="追隨"><svg class="gicon cam" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4.5" width="9" height="7" rx="1.5"/><path d="m10.5 7 4-2.2v6.4l-4-2.2"/></svg><span class="txt">追隨</span></button>
-    <button id="tour-start" type="button">▶ 跑一趟全馬</button>
-    <button id="islands-view" type="button">政見島</button>
+    <button id="tour-start" type="button">▶ 開始！</button>
+    <button id="islands-view" type="button">賽道</button>
     <button id="home" type="button">全景</button>
     <a id="vote-link" class="btn-link" href="vote/">投票資訊</a>
   </div>
 </header>
 <nav id="rail" aria-label="政見卡片">
-  <div class="rail-head"><b>14 個補給站 <span class="prog" id="rail-progress"></span></b><button type="button" id="tour-start-rail">▶ 跑一趟全馬</button></div>
+  <div class="rail-head"><b>14 個補給站 <span class="prog" id="rail-progress"></span></b><button type="button" id="tour-start-rail">▶ 開始！</button></div>
   <div class="rail-track" id="rail-track"></div>
 </nav>
 <aside id="index" hidden aria-label="政見與景點清單">
@@ -1299,7 +1305,7 @@ function curlyTail(innerColor, outerColor, { turns = 1.1, center = 0.085, shrink
 const BUILDERS = {
   coast(g, p, c) {
     // Half of the island is sea, aligned to the hex corners
-    g.add(mesh(new THREE.CylinderGeometry(R * 0.97, R * 0.97, 0.04, 3, 1, false, (2 * Math.PI) / 3, Math.PI), '#6fb3d6', 0, 0.02, 0));
+    g.add(mesh(new THREE.CylinderGeometry(2.13, 2.13, 0.04, 3, 1, false, (2 * Math.PI) / 3, Math.PI), '#6fb3d6', 0, 0.02, 0));
     g.add(mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.3, 12), '#ffffff', 0.5, 0.65, 0.9));
     g.add(mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.2, 12), '#e5484d', 0.5, 0.75, 0.9));
     const light = mesh(new THREE.SphereGeometry(0.13, 12, 8), '#ffd166', 0.5, 1.4, 0.9, { emissive: '#ffb703', emissiveIntensity: 0.8 });
@@ -1832,123 +1838,238 @@ const BUILDERS = {
 
 await yieldToBrowser();
 
-// ---------- Islands ----------
-const R = 2.6, H = 0.7, GAP = 1.13;
-const CONTENT_SCALE = R / 2.2; // the island builders are drawn for R = 2.2; larger islands scale them up
+// ---------- City marathon: the middle of the map is a New Taipei city, the course loops through its streets ----------
+// A raised city plate cut into blocks by a grid of streets. The course follows the streets in one loop; the 14 aid
+// stations stand at km 3, 6 … 42 along it, each beside a block that shows its policy (the builders' scenes), and the
+// other blocks are ordinary city. `islands` holds the 14 station groups; the name stays from the island map.
+const CITY_R = 12.6, BLOCK = 4, STREET_W = 0.62, ROAD_Y = 0.012;
+const STATION_SCALE = 0.72; // the builders are drawn for a hexagon about 4.4 across; a block is 3.4
 
-// Street ring along each island rim, centred on the people's walk graph. From the rim inward: sidewalk (runners),
-// bike lane (riders), then a one-way road (cars). LANES are perpendicular offsets from the ring's centre line.
-const PATH_R = R * 0.86, PATH_T = 0.04, PATH_TOP = H + 0.05;
-const BAND_W = 0.52; // whole ring, rim to inner edge
-const LANES = {
-  sidewalk: { off: 0.19, w: 0.14, top: 0.012 },
-  curb: { off: 0.115, w: 0.012, top: 0.012 },
-  bike: { off: 0.05, w: 0.12, top: 0.004 },
-  road: { off: -0.135, w: 0.25, top: -0.004 },
-};
-const COS30 = Math.cos(Math.PI / 6);
-const laneCornerR = (off) => PATH_R + off / COS30; // corner radius of the line `off` out from the centre line
-function hexRingGeometry(rMid, width, depth) {
-  const d = width / 2 / Math.cos(Math.PI / 6);
-  // Shape y maps to world -z after rotateX, so corners land at (sin a, cos a) like the island prism
-  const corners = (r) => Array.from({ length: 6 }, (_, k) => new THREE.Vector2(Math.sin((k * Math.PI) / 3) * r, -Math.cos((k * Math.PI) / 3) * r));
-  const shape = new THREE.Shape(corners(rMid + d));
-  shape.holes.push(new THREE.Path(corners(rMid - d).reverse()));
-  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
-  geo.rotateX(-Math.PI / 2);
-  return geo;
-}
-// Distance between facing track corners of two neighboring islands, i.e. how long each bridge is
-const BRIDGE_SPAN = Math.sqrt(3) * (R * GAP - PATH_R);
-// All islands share one set of street geometries; each ring is extruded from the same base height
-const streetGeo = Object.fromEntries(Object.entries(LANES).map(([k, l]) => [k, hexRingGeometry(laneCornerR(l.off), l.w, PATH_T + l.top)]));
-const bikeEdgeGeo = mergeGeometries([0.112, -0.012].map((o) => hexRingGeometry(laneCornerR(o), 0.008, PATH_T + 0.006)));
-// Short pieces laid along every edge of a ring: road centre dashes, sidewalk paving joints
-function alongEdges(off, step, make) {
-  const parts = [], rc = laneCornerR(off);
-  for (let k = 0; k < 6; k++) {
-    const a0 = (k * Math.PI) / 3, a1 = ((k + 1) * Math.PI) / 3;
-    const p0 = new THREE.Vector3(Math.sin(a0) * rc, 0, Math.cos(a0) * rc), p1 = new THREE.Vector3(Math.sin(a1) * rc, 0, Math.cos(a1) * rc);
-    const len = p0.distanceTo(p1), heading = Math.atan2(p1.x - p0.x, p1.z - p0.z);
-    for (let d = step; d < len - step * 0.5; d += step) {
-      const g = make().rotateY(heading);
-      const at = p0.clone().lerp(p1, d / len);
-      parts.push(g.translate(at.x, 0, at.z));
+const plate = new THREE.Mesh(new THREE.CylinderGeometry(CITY_R, CITY_R + 0.5, 1, 72), [mat('#c9bfae'), mat('#e6e1d6'), mat('#c9bfae')]);
+plate.position.y = -0.5;
+plate.receiveShadow = true;
+scene.add(plate);
+
+// Streets: every BLOCK in both directions, clipped to the plate
+const streetParts = [], dashParts = [];
+for (let c = -3 * BLOCK; c <= 3 * BLOCK; c += BLOCK) {
+  const half = Math.sqrt(Math.max(0, (CITY_R - 0.4) ** 2 - c * c));
+  if (half < 1) continue;
+  [false, true].forEach((alongX) => {
+    const geo = new THREE.BoxGeometry(STREET_W, 0.02, half * 2);
+    streetParts.push(alongX ? geo.rotateY(Math.PI / 2).translate(0, 0.01, c) : geo.translate(c, 0.01, 0));
+    for (let d = -half + 0.3; d < half - 0.3; d += 0.5) {
+      const dash = new THREE.BoxGeometry(0.03, 0.022, 0.2);
+      dashParts.push(alongX ? dash.rotateY(Math.PI / 2).translate(d, 0.011, c) : dash.translate(c, 0.011, d));
     }
-  }
-  return mergeGeometries(parts);
+  });
 }
-const roadDashGeo = alongEdges(LANES.road.off, 0.2, () => new THREE.BoxGeometry(0.014, PATH_T + 0.001, 0.09).translate(0, (PATH_T + 0.001) / 2, 0));
-const pavingGeo = alongEdges(LANES.sidewalk.off, 0.13, () => new THREE.BoxGeometry(LANES.sidewalk.w * 0.98, PATH_T + 0.0125, 0.006).translate(0, (PATH_T + 0.0125) / 2, 0));
-const STREET_COLORS = { sidewalk: '#e7dfcf', curb: '#b9b2a4', bike: '#5aa874', road: '#4a4e55' };
-// Rows of 2, 3, 4, 3, 2 islands; the half-cell shift centres the four-island middle row on x = 0
-const hexToWorld = (q, r) => [R * GAP * Math.sqrt(3) * (q + r / 2 + 0.5), R * GAP * 1.5 * r];
+[[mergeGeometries(streetParts), '#5b5f66'], [mergeGeometries(dashParts), '#f4f1e8']].forEach(([geo, color]) => {
+  const m = new THREE.Mesh(geo, mat(color));
+  m.receiveShadow = true;
+  scene.add(m);
+});
 
-// One small car per island drives its road loop; body, windows and wheels share geometry across all cars
-const CAR_COLORS = ['#e5484d', '#3f7fd0', '#f2a03d', '#f4f1e8', '#3a9b6a', '#7b5cc4', '#2b2f36'];
-const carBodyGeo = rbox(0.11, 0.055, 0.22, 0.02).translate(0, 0.055, 0);
-const carCabinGeo = rbox(0.095, 0.045, 0.11, 0.015).translate(0, 0.1, 0.01);
-const carWheelGeo = mergeGeometries([[-0.055, -0.07], [0.055, -0.07], [-0.055, 0.07], [0.055, 0.07]]
-  .map(([x, z]) => new THREE.CylinderGeometry(0.025, 0.025, 0.02, 10).rotateZ(Math.PI / 2).translate(x, 0.025, z)));
-const carLightGeo = mergeGeometries([-0.035, 0.035].map((x) => new THREE.BoxGeometry(0.02, 0.012, 0.004).translate(x, 0.06, 0.111)));
-function addCar(g, i) {
-  const car = new THREE.Group();
-  [[carBodyGeo, CAR_COLORS[i % CAR_COLORS.length], {}], [carCabinGeo, '#bcd9ea', { roughness: 0.25, metalness: 0.2 }],
-    [carWheelGeo, '#1f2328', {}], [carLightGeo, '#fff4c2', { emissive: '#ffe08a', emissiveIntensity: 0.5 }]]
-    .forEach(([geo, color, extra]) => {
-      const m = new THREE.Mesh(geo, mat(color, extra));
-      m.castShadow = true;
-      car.add(m);
+// The course: a loop along the streets, run anticlockwise from the start line on the north side
+const COURSE_PTS = [[0, -8], [-4, -8], [-4, -4], [-8, -4], [-8, 4], [-4, 4], [-4, 8], [4, 8], [4, 4], [8, 4], [8, -4], [4, -4], [4, -8]];
+const courseLegs = COURSE_PTS.map(([ax, az], k) => {
+  const [bx, bz] = COURSE_PTS[(k + 1) % COURSE_PTS.length];
+  const len = Math.hypot(bx - ax, bz - az);
+  return { ax, az, dx: (bx - ax) / len, dz: (bz - az) / len, len };
+});
+const COURSE_LEN = courseLegs.reduce((sum, l) => sum + l.len, 0);
+// Point and running direction `s` along the loop (wraps around)
+function courseAt(s) {
+  s = ((s % COURSE_LEN) + COURSE_LEN) % COURSE_LEN;
+  for (const l of courseLegs) {
+    if (s <= l.len) return { x: l.ax + l.dx * s, z: l.az + l.dz * s, dx: l.dx, dz: l.dz };
+    s -= l.len;
+  }
+  return courseAt(0);
+}
+const stationS = (pos) => (((pos + 1) * 3) / KM_FULL) * COURSE_LEN; // pos 0 is the km 3 station
+
+// Blue line down the middle of the course, cones along both kerbs
+const COURSE_BLUE = '#2f6fdb';
+const lineParts = [], coneParts = [];
+courseLegs.forEach((l) => {
+  const heading = Math.atan2(l.dx, l.dz);
+  lineParts.push(new THREE.BoxGeometry(0.1, 0.024, l.len + 0.1).rotateY(heading).translate(l.ax + (l.dx * l.len) / 2, 0.012, l.az + (l.dz * l.len) / 2));
+  for (let d = 0.5; d < l.len; d += 0.9) {
+    [-1, 1].forEach((side) => {
+      const x = l.ax + l.dx * d - l.dz * side * (STREET_W / 2 - 0.04), z = l.az + l.dz * d + l.dx * side * (STREET_W / 2 - 0.04);
+      coneParts.push(new THREE.ConeGeometry(0.035, 0.1, 6).toNonIndexed().translate(x, 0.07, z));
     });
-  car.position.y = PATH_TOP + LANES.road.top;
-  g.add(car);
-  const rc = laneCornerR(LANES.road.off);
-  const corner = (k) => [Math.sin((k * Math.PI) / 3) * rc, Math.cos((k * Math.PI) / 3) * rc];
-  let s = (i * 1.7) % 6; // position along the loop, in edges
-  animators.push((t, dt) => {
-    s = (s + dt * 0.25) % 6; // one edge every four seconds
-    const k = Math.floor(s), f = s - k;
-    const [x0, z0] = corner(k), [x1, z1] = corner(k + 1);
-    car.position.x = x0 + (x1 - x0) * f;
-    car.position.z = z0 + (z1 - z0) * f;
-    car.rotation.y = Math.atan2(x1 - x0, z1 - z0);
+  }
+});
+[[mergeGeometries(lineParts), COURSE_BLUE], [mergeGeometries(coneParts), '#f97316']].forEach(([geo, color]) => {
+  const m = new THREE.Mesh(geo, mat(color));
+  m.castShadow = m.receiveShadow = true;
+  scene.add(m);
+});
+
+// A sign made from canvas text, for the km boards and the start/finish banner
+function textTexture(key, w, h, draw) {
+  return cached(texCache, key, () => {
+    const cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    draw(cv.getContext('2d'), w, h);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
   });
 }
 
+// Each station takes the block beside its point on the course, on the outside of the loop when that block is on the
+// plate and free, otherwise the inside
+const blockKey = (x, z) => `${x},${z}`;
+const usedBlocks = new Set();
+const blockFits = (x, z) => Math.hypot(x, z) + BLOCK / 2 < CITY_R;
+const stationSpots = COURSE.map((_, pos) => {
+  const p = courseAt(stationS(pos));
+  const snap = (v) => Math.round((v - BLOCK / 2) / BLOCK) * BLOCK + BLOCK / 2; // nearest block centre along the street
+  const along = p.dx ? [snap(p.x), p.z] : [p.x, snap(p.z)];
+  for (const side of [1, -1]) { // 1: right of the runners, the outside of an anticlockwise loop
+    const bx = along[0] - p.dz * side * (BLOCK / 2), bz = along[1] + p.dx * side * (BLOCK / 2);
+    if (blockFits(bx, bz) && !usedBlocks.has(blockKey(bx, bz))) {
+      usedBlocks.add(blockKey(bx, bz));
+      return { p, side, bx, bz };
+    }
+  }
+  throw new Error(`no free block for station ${pos}`);
+});
+
 const islands = POLICIES.map((p, i) => {
   const color = GROUPS[p.group].color;
+  const pos = COURSE.indexOf(i), spot = stationSpots[pos];
   const g = new THREE.Group();
-  const [x, z] = hexToWorld(...p.cell);
-  g.position.set(x, 0, z);
+  g.position.set(spot.bx, 0, spot.bz);
   g.userData = { index: i, lift: 0, liftGoal: 0 };
 
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(R, R * 0.92, H, 6),
-    [mat('#c9b99a'), mat(shade(color, 0.72)), mat('#c9b99a')],
-  );
-  base.position.y = H / 2;
-  base.castShadow = base.receiveShadow = true;
-  g.add(base);
-
+  const lot = new THREE.Mesh(rbox(BLOCK - STREET_W - 0.1, 0.08, BLOCK - STREET_W - 0.1, 0.03), mat(shade(color, 0.72)));
+  lot.position.y = 0.04;
+  lot.receiveShadow = true;
+  g.add(lot);
   const content = new THREE.Group();
-  content.position.y = H;
-  content.scale.setScalar(CONTENT_SCALE);
+  content.position.y = 0.08;
+  content.scale.setScalar(STATION_SCALE);
   BUILDERS[p.type](content, p, color);
   g.add(content);
   g.userData.content = content;
 
-  const street = new THREE.Group();
-  street.position.y = PATH_TOP - PATH_T;
-  Object.keys(LANES).forEach((k) => {
-    const m = new THREE.Mesh(streetGeo[k], mat(STREET_COLORS[k]));
-    m.receiveShadow = true;
-    street.add(m);
-  });
-  street.add(new THREE.Mesh(bikeEdgeGeo, mat('#f4f1e8')), new THREE.Mesh(roadDashGeo, mat('#f4f1e8')), new THREE.Mesh(pavingGeo, mat('#cfc6b4')));
-  g.add(street);
-  addCar(g, i);
+  // At the kerb on the station's side: an aid tent with a table of cups, and a km board on a post
+  const { p: at, side } = spot;
+  const kerbX = at.x - at.dz * side * (STREET_W / 2 + 0.28) - spot.bx, kerbZ = at.z + at.dx * side * (STREET_W / 2 + 0.28) - spot.bz;
+  const tent = new THREE.Group();
+  [[-0.2, -0.14], [0.2, -0.14], [-0.2, 0.14], [0.2, 0.14]].forEach(([x, z]) => tent.add(mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.42, 4), '#d1d5db', x, 0.21, z)));
+  const roof = mesh(new THREE.ConeGeometry(0.34, 0.16, 4), color, 0, 0.5, 0);
+  roof.rotation.y = Math.PI / 4;
+  roof.scale.set(1.3, 1, 1);
+  tent.add(roof);
+  tent.add(mesh(new THREE.BoxGeometry(0.4, 0.03, 0.16), '#ffffff', 0, 0.2, 0));
+  [-0.12, 0, 0.12].forEach((x) => tent.add(mesh(new THREE.CylinderGeometry(0.018, 0.014, 0.05, 8), '#7fc3dc', x, 0.24, 0)));
+  tent.position.set(kerbX, 0.08, kerbZ);
+  tent.rotation.y = Math.atan2(at.dx, at.dz); // long side along the road
+  tent.scale.setScalar(1.4);
+  g.add(tent);
+  const km = (pos + 1) * 3;
+  const postX = kerbX - at.dx * 2.4, postZ = kerbZ - at.dz * 2.4; // well before the tent: runners pass it before they stop
+  g.add(mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), '#5b6370', postX, 0.5, postZ));
+  const board = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: textTexture(`km${km}`, 256, 128, (ctx, w, h) => {
+      ctx.fillStyle = COURSE_BLUE;
+      ctx.beginPath();
+      ctx.roundRect(4, 4, w - 8, h - 8, 22);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `900 72px ${STORY_FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`KM ${km}`, w / 2, h / 2 + 4);
+    }),
+  }));
+  board.scale.set(0.9, 0.45, 1);
+  board.position.set(postX, 1.15, postZ);
+  g.add(board);
   scene.add(g);
   return g;
+});
+
+// Start/finish arch across the road at the start line, with a chequered line under it
+{
+  const p = courseAt(0);
+  const arch = new THREE.Group();
+  arch.position.set(p.x, 0, p.z);
+  arch.rotation.y = Math.atan2(p.dx, p.dz); // local z runs with the course
+  const span = STREET_W / 2 + 0.12;
+  [-span, span].forEach((x) => arch.add(mesh(rbox(0.12, 1.5, 0.12, 0.03), '#e0663d', x, 0.75, 0)));
+  const banner = textTexture('finish', 512, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#e0663d';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 54px ${STORY_FONT}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`起點・終點 ${KM_FULL}K`, w / 2, h / 2 + 3);
+  });
+  const bannerMat = new THREE.MeshStandardMaterial({ map: banner, roughness: 0.8 });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(span * 2 + 0.3, 0.32, 0.06), [mat('#e0663d'), mat('#e0663d'), mat('#e0663d'), mat('#e0663d'), bannerMat, bannerMat]);
+  sign.position.y = 1.5;
+  sign.castShadow = true;
+  arch.add(sign);
+  for (let k = 0; k < 8; k++) {
+    arch.add(mesh(new THREE.BoxGeometry(STREET_W / 8, 0.026, 0.12), k % 2 ? '#1f2328' : '#ffffff', -STREET_W / 2 + STREET_W / 16 + (k * STREET_W) / 8, 0.013, 0));
+  }
+  scene.add(arch);
+}
+
+// The other blocks are city: a few buildings each, taller toward the middle, and the odd park
+const cityGeos = new Map();
+const addCity = (color, geo) => (cityGeos.get(color) ?? cityGeos.set(color, []).get(color)).push(geo.index ? geo.toNonIndexed() : geo);
+const crand = seeded(2026);
+const FACADES = ['#f4efe4', '#e9eef2', '#dfe7ef', '#efe3cf', '#d6dde6', '#f6e6d6', '#cfd8e3'];
+for (let bx = -10; bx <= 10; bx += BLOCK) {
+  for (let bz = -10; bz <= 10; bz += BLOCK) {
+    if (!blockFits(bx, bz) || usedBlocks.has(blockKey(bx, bz))) continue;
+    const inner = BLOCK - STREET_W - 0.3;
+    addCity('#d9d3c6', new THREE.BoxGeometry(inner + 0.2, 0.06, inner + 0.2).translate(bx, 0.03, bz));
+    if (crand() < 0.2) { // park
+      addCity('#a7cf8a', new THREE.BoxGeometry(inner, 0.08, inner).translate(bx, 0.04, bz));
+      for (let n = 0; n < 9; n++) {
+        const x = bx + (crand() - 0.5) * inner * 0.8, z = bz + (crand() - 0.5) * inner * 0.8, s = 0.7 + crand() * 0.5;
+        addCity('#8a6a4a', new THREE.CylinderGeometry(0.05 * s, 0.07 * s, 0.32 * s, 5).translate(x, 0.08 + 0.16 * s, z));
+        addCity(['#4f9a5f', '#5fa86a', '#6cb06f'][n % 3], new THREE.IcosahedronGeometry(0.3 * s, 0).translate(x, 0.08 + 0.55 * s, z));
+      }
+      continue;
+    }
+    const tall = 1 - Math.hypot(bx, bz) / CITY_R; // the middle of the city is denser
+    for (const [ox, oz] of [[-0.75, -0.75], [0.75, -0.75], [-0.75, 0.75], [0.75, 0.75]]) {
+      if (crand() < 0.15) continue;
+      const w = 1.0 + crand() * 0.35, d = 1.0 + crand() * 0.35, h = 0.5 + crand() * (0.8 + tall * 2.2);
+      const x = bx + ox, z = bz + oz;
+      addCity(FACADES[Math.floor(crand() * FACADES.length)], new THREE.BoxGeometry(w, h, d).translate(x, 0.06 + h / 2, z));
+      addCity('#9aa3ad', new THREE.BoxGeometry(w * 0.4, 0.12, d * 0.4).translate(x, 0.06 + h + 0.06, z)); // rooftop plant room
+    }
+  }
+}
+// Spectators along the kerbs, thicker near the start and at every station
+const CROWD_COLORS = ['#e5484d', '#3f7fd0', '#f2a03d', '#f4f1e8', '#3a9b6a', '#7b5cc4', '#2b2f36'];
+const cheer = [0, ...COURSE.map((_, pos) => stationS(pos))];
+for (let n = 0; n < 160; n++) {
+  const s = n < 80 ? cheer[n % cheer.length] + (crand() - 0.5) * 2.4 : crand() * COURSE_LEN;
+  const p = courseAt(s), side = crand() < 0.5 ? -1 : 1;
+  const off = STREET_W / 2 + 0.12 + crand() * 0.12;
+  const x = p.x - p.dz * side * off, z = p.z + p.dx * side * off;
+  if (islands.some((g) => Math.abs(g.position.x - x) < BLOCK / 2 - 0.2 && Math.abs(g.position.z - z) < BLOCK / 2 - 0.2)) continue;
+  addCity(CROWD_COLORS[n % CROWD_COLORS.length], new THREE.CylinderGeometry(0.045, 0.05, 0.2, 6).translate(x, 0.1, z));
+  addCity('#f3c9a5', new THREE.SphereGeometry(0.045, 6, 4).translate(x, 0.25, z));
+}
+cityGeos.forEach((geos, color) => {
+  const m = new THREE.Mesh(mergeGeometries(geos), mat(color, { flatShading: true }));
+  m.castShadow = m.receiveShadow = true;
+  scene.add(m);
 });
 
 // ---------- Labels ----------
@@ -2020,9 +2141,9 @@ const labels = POLICIES.map((p, i) => {
 const labelPos = new THREE.Vector3();
 function updateLabels() {
   islands.forEach((g, i) => {
-    placeLabel(labels[i], labelPos.set(g.position.x, g.position.y + 2.7, g.position.z));
+    placeLabel(labels[i], labelPos.set(g.position.x, g.position.y + 2.2, g.position.z));
     // Where the label would be with the island at rest: steady input for declutterLabels
-    tmp.set(g.position.x, 2.7, g.position.z).project(camera);
+    tmp.set(g.position.x, 2.2, g.position.z).project(camera);
     labels[i].rest = { x: (tmp.x * 0.5 + 0.5) * innerWidth, y: (-tmp.y * 0.5 + 0.5) * innerHeight, depth: tmp.z };
   });
   spots.forEach((s) => placeLabel(s.label, labelPos.set(s.g.position.x, 2.3, s.g.position.z)));
@@ -2384,19 +2505,19 @@ animators.push((t, dt) => driftClouds(dt));
 
 await yieldToBrowser();
 
-// ---------- Countryside: the land between the policy islands and the coast ----------
-// Rivers, rice fields, woods and villages fill the plain so the map reads as one New Taipei island. Everything still
+// ---------- Countryside: the land between the city and the coast ----------
+// Rivers, rice fields, woods and villages fill the plain around the city. Everything still
 // is merged into one mesh per color; only the circle line train, the wind turbines and the boats move.
 const PLAIN_Y = -1; // top of the land
 const decorGeos = new Map();
 // Some three.js shapes come indexed and some not; mergeGeometries needs them all the same
 const addDecor = (color, geo) => (decorGeos.get(color) ?? decorGeos.set(color, []).get(color)).push(geo.index ? geo.toNonIndexed() : geo);
 const drand = seeded(1121);
-// Clear of the islands (with their bridges), the landmark islets and the circle line
-const islandClear = (x, z, pad) => islands.every((g) => Math.hypot(g.position.x - x, g.position.z - z) > R + pad);
+// Clear of the city plate, the landmark islets and the circle line
+const cityClear = (x, z, pad) => Math.hypot(x, z) > CITY_R + 0.3 + pad;
 const spotClear = (x, z, pad) => spots.every((s) => Math.hypot(s.g.position.x - x, s.g.position.z - z) > 2.2 + pad);
-const MRT_R = 13.2;
-const freeAt = (x, z, pad = 0.4) => islandClear(x, z, pad) && spotClear(x, z, pad) && Math.abs(Math.hypot(x, z) - MRT_R) > 0.5 + pad;
+const MRT_R = 13.6;
+const freeAt = (x, z, pad = 0.4) => cityClear(x, z, pad) && spotClear(x, z, pad) && Math.abs(Math.hypot(x, z) - MRT_R) > 0.5 + pad;
 
 // Rivers: Tamsui River to its mouth by the lovers' bridge, Xindian River from Bitan, Dahan River from Sanxia
 function riverGeometry(points, w0, w1) {
@@ -2418,9 +2539,9 @@ function riverGeometry(points, w0, w1) {
   return geo;
 }
 const RIVERS = [
-  { points: [[-95, 10.8], [-88, 12.6], [-72, 14.2], [-58, 16.2], [-52, 19]], w: [0.9, 1.6] },
-  { points: [[185, 17.5], [182, 15], [172, 13], [160, 12]], w: [0.5, 0.75] },
-  { points: [[240, 17.2], [236, 14.8], [228, 12.6], [214, 11.6]], w: [0.45, 0.7] },
+  { points: [[-100, 13.1], [-88, 13.4], [-72, 14.4], [-58, 16.2], [-52, 19]], w: [0.9, 1.6] },
+  { points: [[185, 17.5], [182, 15.2], [174, 13.6], [164, 13.1]], w: [0.5, 0.75] },
+  { points: [[240, 17.2], [236, 15], [228, 13.6], [218, 13.1]], w: [0.45, 0.7] },
 ];
 RIVERS.forEach((rv) => {
   const geo = riverGeometry(rv.points, ...rv.w);
@@ -2564,28 +2685,7 @@ const PEOPLE = [
   { name: '泰鑫', ride: true, look: 'male', shirt: '#1e3a8a', hair: '#111111' },
   { name: 'Chïen', look: 'female', shirt: '#eab308', hair: '#3b2a1e' },
 ];
-const SKIN = '#f3c9a5', RUN_SPEED = 1.5, RIDE_SPEED = 2.4;
-
-// Walk graph: inset corners of every island, linked around each rim and to nearby corners of neighboring islands,
-// so people stroll along the island edges instead of walking through buildings
-const nodes = [];
-islands.forEach((g, i) => {
-  for (let k = 0; k < 6; k++) {
-    const a = (k * Math.PI) / 3;
-    const at = (off) => ({ x: g.position.x + Math.sin(a) * laneCornerR(off), z: g.position.z + Math.cos(a) * laneCornerR(off) });
-    const run = at(LANES.sidewalk.off), ride = at(LANES.bike.off);
-    // `bridge` sits between the two lanes, so a bridge deck centred on it carries both
-    nodes.push({ island: i, x: g.position.x + Math.sin(a) * PATH_R, z: g.position.z + Math.cos(a) * PATH_R, links: [],
-      lanes: { run, ride, bridge: { x: (run.x + ride.x) / 2, z: (run.z + ride.z) / 2 } } });
-  }
-});
-nodes.forEach((n, idx) => {
-  const k = idx % 6, base = idx - k;
-  n.links.push(base + ((k + 1) % 6), base + ((k + 5) % 6));
-  nodes.forEach((m, j) => {
-    if (m.island !== n.island && Math.hypot(m.x - n.x, m.z - n.z) < BRIDGE_SPAN + 0.25) n.links.push(j);
-  });
-});
+const SKIN = '#f3c9a5', RUN_SPEED = 1.5, RIDE_SPEED = 2.4, PERSON_SCALE = 0.75;
 
 // Bicycle along +z (the heading), wheels on the ground; numbers are in the person's own scale
 function makeBike(color) {
@@ -2643,144 +2743,13 @@ function makePerson(p) {
     g.add(ride.bike);
     body.position.set(0, 0.21, -0.08); // hips on the saddle
   }
-  g.scale.setScalar(1.15);
+  g.scale.setScalar(PERSON_SCALE);
   scene.add(g);
   return { g, body, legs, arms, ride };
 }
 
-// ---------- Marathon course through the walk graph ----------
-// Each leg crosses one of the (usually two) bridges between consecutive stations. On each island runners go from the
-// corner where they came off the bridge to the corner of the next bridge, along the rim the shorter way. Of all bridge
-// choices, the course takes the one with the least rim running, but never enters and leaves at the same corner, so
-// every station gets a stretch of rim (where its aid tent stands).
-const legOptions = COURSE.map((isl, s) => {
-  const next = COURSE[(s + 1) % COURSE.length];
-  return nodes.flatMap((n, j) => (n.island === isl ? n.links.filter((x) => nodes[x].island === next).map((x) => [j, x]) : []));
-});
-const rimSteps = (a, b) => {
-  const d = Math.abs((a % 6) - (b % 6));
-  return Math.min(d, 6 - d);
-};
-let coursePick = null;
-for (let mask = 0, best = Infinity; mask < 1 << COURSE.length; mask++) {
-  const pick = legOptions.map((o, s) => o[(mask >> s) & 1] ?? o[0]);
-  const cost = pick.reduce((sum, [exit], s) => {
-    const d = rimSteps(pick[(s + COURSE.length - 1) % COURSE.length][1], exit);
-    return sum + (d === 0 ? 99 : d);
-  }, 0);
-  if (cost < best) [best, coursePick] = [cost, pick];
-}
-// Node indices in running order, starting where the first station's runners come off the start bridge
-const courseNodes = [];
-const stationRim = []; // per station: its nodes on the rim, entry first
-COURSE.forEach((isl, s) => {
-  const entry = coursePick[(s + COURSE.length - 1) % COURSE.length][1], exit = coursePick[s][0];
-  const base = entry - (entry % 6), forward = (exit % 6 - entry % 6 + 6) % 6;
-  const dir = forward <= 3 ? 1 : -1, steps = rimSteps(entry, exit);
-  const rim = Array.from({ length: steps + 1 }, (_, k) => base + ((entry % 6 + dir * k + 6) % 6));
-  stationRim.push(rim);
-  courseNodes.push(...rim);
-});
-
-// Course line: a blue stripe down the middle of the sidewalk, part of each island so it rises and bobs with it
-const COURSE_BLUE = '#2f6fdb';
-stationRim.forEach((rim) => {
-  const g = islands[nodes[rim[0]].island];
-  const parts = rim.slice(1).map((j, k) => {
-    const a = nodes[rim[k]].lanes.run, b = nodes[j].lanes.run;
-    const len = Math.hypot(b.x - a.x, b.z - a.z);
-    return new THREE.BoxGeometry(0.08, 0.006, len + 0.08)
-      .rotateY(Math.atan2(b.x - a.x, b.z - a.z))
-      .translate((a.x + b.x) / 2 - g.position.x, PATH_TOP + LANES.sidewalk.top + 0.004, (a.z + b.z) / 2 - g.position.z);
-  });
-  g.add(new THREE.Mesh(mergeGeometries(parts), mat(COURSE_BLUE)));
-});
-
-// A sign made from canvas text, for the km boards and the start/finish banner
-function textTexture(key, w, h, draw) {
-  return cached(texCache, key, () => {
-    const cv = document.createElement('canvas');
-    cv.width = w;
-    cv.height = h;
-    draw(cv.getContext('2d'), w, h);
-    const tex = new THREE.CanvasTexture(cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    return tex;
-  });
-}
-
-// Each station: a km board on a post where runners arrive, and an aid tent with a table of cups inside the next corner
-stationRim.forEach((rim, s) => {
-  const i = COURSE[s], g = islands[i], color = GROUPS[POLICIES[i].group].color;
-  const km = (s + 1) * 3;
-  const local = (node, off) => {
-    const k = node % 6, a = (k * Math.PI) / 3, r = laneCornerR(off);
-    return [Math.sin(a) * r, Math.cos(a) * r];
-  };
-  // A third of the way along the first edge, clear of the bridge (and of the start arch at the first station)
-  const [ax, az] = local(rim[0], LANES.sidewalk.off + 0.1), [bx, bz] = local(rim[1], LANES.sidewalk.off + 0.1);
-  const [sx, sz] = [ax + (bx - ax) * 0.35, az + (bz - az) * 0.35];
-  g.add(mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), '#5b6370', sx, PATH_TOP + 0.5, sz));
-  const board = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: textTexture(`km${km}`, 256, 128, (ctx, w, h) => {
-      ctx.fillStyle = COURSE_BLUE;
-      ctx.beginPath();
-      ctx.roundRect(4, 4, w - 8, h - 8, 22);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `900 72px ${STORY_FONT}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`KM ${km}`, w / 2, h / 2 + 4);
-    }),
-  }));
-  board.scale.set(0.96, 0.48, 1);
-  board.position.set(sx, PATH_TOP + 1.2, sz);
-  g.add(board);
-
-  const [tx, tz] = local(rim[Math.min(1, rim.length - 1)], LANES.road.off - 0.5);
-  const tent = new THREE.Group();
-  [[-0.2, -0.14], [0.2, -0.14], [-0.2, 0.14], [0.2, 0.14]].forEach(([x, z]) => tent.add(mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.42, 4), '#d1d5db', x, 0.21, z)));
-  const roof = mesh(new THREE.ConeGeometry(0.34, 0.16, 4), color, 0, 0.5, 0);
-  roof.rotation.y = Math.PI / 4;
-  roof.scale.set(1.3, 1, 1);
-  tent.add(roof);
-  tent.add(mesh(new THREE.BoxGeometry(0.4, 0.03, 0.16), '#ffffff', 0, 0.2, 0));
-  [-0.12, 0, 0.12].forEach((x) => tent.add(mesh(new THREE.CylinderGeometry(0.018, 0.014, 0.05, 8), '#7fc3dc', x, 0.24, 0)));
-  tent.position.set(tx, PATH_TOP, tz);
-  tent.scale.setScalar(1.5);
-  tent.rotation.y = Math.atan2(tx, tz); // the open side faces the rim
-  g.add(tent);
-});
-
-// Start/finish arch over the bridge from the last station back to the first
-{
-  const a = nodes[coursePick[COURSE.length - 1][0]].lanes.bridge, b = nodes[coursePick[COURSE.length - 1][1]].lanes.bridge;
-  const arch = new THREE.Group();
-  arch.position.set((a.x + b.x) / 2, PATH_TOP, (a.z + b.z) / 2);
-  arch.rotation.y = Math.atan2(b.x - a.x, b.z - a.z); // local z runs along the bridge
-  arch.scale.setScalar(1.5);
-  [-0.36, 0.36].forEach((x) => arch.add(mesh(rbox(0.1, 1.3, 0.1, 0.03), '#e0663d', x, 0.65, 0)));
-  const banner = textTexture('finish', 512, 128, (ctx, w, h) => {
-    ctx.fillStyle = '#e0663d';
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `900 54px ${STORY_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`起點・終點 ${KM_FULL}K`, w / 2, h / 2 + 3);
-  });
-  const sign = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.24, 0.06), [mat('#e0663d'), mat('#e0663d'), mat('#e0663d'), mat('#e0663d'),
-    new THREE.MeshStandardMaterial({ map: banner, roughness: 0.8 }), new THREE.MeshStandardMaterial({ map: banner, roughness: 0.8 })]);
-  sign.position.y = 1.3;
-  sign.castShadow = true;
-  arch.add(sign);
-  scene.add(arch);
-}
-
+// Everyone runs the course, spread out along it, each in a lane of their own; the riders are the lead bikes
 const people = PEOPLE.map((p, i) => {
-  const ci = Math.floor((i * courseNodes.length) / PEOPLE.length); // spread out along the course
   const label = document.createElement('button');
   label.type = 'button';
   label.className = 'label person';
@@ -2788,37 +2757,23 @@ const people = PEOPLE.map((p, i) => {
   label.setAttribute('aria-label', `追隨 ${p.name}`);
   label.addEventListener('click', () => startFollow(i));
   labelsEl.appendChild(label);
-  return { ...makePerson(p), label, ci, from: courseNodes[ci], to: courseNodes[(ci + 1) % courseNodes.length], t: 0, wait: i * 0.4, phase: 0 };
+  return { ...makePerson(p), label, s: (i / PEOPLE.length) * COURSE_LEN, lane: ((i % 5) - 2) * 0.08, wait: i * 0.4, phase: 0 };
 });
 
 function stepPerson(w, dt) {
+  const speed = (w.ride ? RIDE_SPEED : RUN_SPEED) * 0.6;
   if (w.wait > 0) w.wait -= dt;
   else {
-    const lane = w.ride ? 'ride' : 'run';
-    const a = nodes[w.from].lanes[lane], b = nodes[w.to].lanes[lane];
-    const speed = w.ride ? RIDE_SPEED : RUN_SPEED;
-    w.t += (dt * speed) / Math.max(0.01, Math.hypot(b.x - a.x, b.z - a.z));
+    w.s += dt * speed;
     w.phase += dt * (w.ride ? 9 : 16);
     // Wheels roll by distance travelled; the group is scaled, so divide by the scaled radius
-    w.ride?.wheels.forEach((wheel) => { wheel.rotation.x += (dt * speed) / (w.ride.wheelRadius * 1.15); });
-    if (w.t >= 1) {
-      // Everyone runs the course; now and then a short stop, like grabbing a cup at an aid station
-      w.ci = (w.ci + 1) % courseNodes.length;
-      [w.from, w.to, w.t] = [w.to, courseNodes[(w.ci + 1) % courseNodes.length], 0];
-      if (Math.random() < 0.06) w.wait = 0.5 + Math.random();
-    }
+    w.ride?.wheels.forEach((wheel) => { wheel.rotation.x += (dt * speed) / (w.ride.wheelRadius * PERSON_SCALE); });
+    if (Math.random() < dt * 0.03) w.wait = 0.5 + Math.random(); // now and then a sip at the roadside
   }
   const running = w.wait <= 0 && dt > 0;
-  const lane = w.ride ? 'ride' : 'run';
-  const na = nodes[w.from], nb = nodes[w.to], a = na.lanes[lane], b = nb.lanes[lane];
-  const lift = THREE.MathUtils.lerp(islands[na.island].position.y, islands[nb.island].position.y, w.t);
-  const surface = na.island === nb.island ? LANES[w.ride ? 'bike' : 'sidewalk'].top : 0; // on a bridge the deck is at PATH_TOP
-  w.g.position.set(
-    THREE.MathUtils.lerp(a.x, b.x, w.t),
-    PATH_TOP + surface + lift + (running && !w.ride ? Math.abs(Math.sin(w.phase)) * 0.05 : 0),
-    THREE.MathUtils.lerp(a.z, b.z, w.t),
-  );
-  w.g.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
+  const at = courseAt(w.s);
+  w.g.position.set(at.x - at.dz * w.lane, ROAD_Y + (running && !w.ride ? Math.abs(Math.sin(w.phase)) * 0.04 : 0), at.z + at.dx * w.lane);
+  w.g.rotation.y = Math.atan2(at.dx, at.dz);
   if (w.ride) {
     // Lean over the bars, hands on the handlebar, feet turning the pedals
     w.body.rotation.x = 0.2;
@@ -2836,108 +2791,8 @@ function stepPerson(w, dt) {
   w.arms[1].rotation.x = swing;
 }
 
-// Bridges join the street rings of neighbouring islands. Each kind is built once in a local frame (deck top at y = 0,
-// running from z = 0 to z = BRIDGE_L) and shared; every frame each bridge is placed between its two ends, which
-// follow the islands' bob and lift. Both bridges between the same two islands are the same kind.
-const BRIDGE_W = 0.34, BRIDGE_PAD = 0.12; // deck width; how far the deck reaches onto each sidewalk
-const bridgePairs = [];
-nodes.forEach((n, i) => n.links.forEach((j) => {
-  if (j > i && nodes[j].island !== n.island) bridgePairs.push([n, nodes[j]]);
-}));
-const BRIDGE_L = bridgePairs.length
-  ? Math.hypot(bridgePairs[0][0].lanes.bridge.x - bridgePairs[0][1].lanes.bridge.x, bridgePairs[0][0].lanes.bridge.z - bridgePairs[0][1].lanes.bridge.z)
-  : 1;
-
-function boxAt(w, h, d, x, y, z) {
-  return new THREE.BoxGeometry(w, h, d).translate(x, y, z);
-}
-function rodBetween(a, b, r) {
-  const len = a.distanceTo(b);
-  const geo = new THREE.CylinderGeometry(r, r, len, 6).translate(0, len / 2, 0);
-  geo.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
-  return geo.translate(a.x, a.y, a.z);
-}
-const BRIDGE_KINDS = {
-  // Wooden plank bridge: dark stringers, posts and handrails under light planks
-  wood: (() => {
-    const L = BRIDGE_L, dark = [], light = [];
-    [-1, 1].forEach((side) => {
-      dark.push(boxAt(0.03, 0.04, L + BRIDGE_PAD * 2, side * 0.13, -0.04, L / 2));
-      for (let z = -BRIDGE_PAD + 0.03; z <= L + BRIDGE_PAD; z += 0.28) dark.push(boxAt(0.022, 0.14, 0.022, side * 0.165, 0.07, z));
-      dark.push(boxAt(0.024, 0.02, L + BRIDGE_PAD * 2 - 0.04, side * 0.165, 0.14, L / 2));
-    });
-    for (let z = -BRIDGE_PAD + 0.04; z < L + BRIDGE_PAD; z += 0.075) light.push(boxAt(BRIDGE_W, 0.02, 0.062, 0, -0.01, z));
-    return [[mergeGeometries(dark), '#6b4a2b'], [mergeGeometries(light), '#c4935f']];
-  })(),
-  // Suspension bridge: red towers at both ends, main cables sagging between them, hangers down to a steel deck
-  suspension: (() => {
-    const L = BRIDGE_L, TOWER = 0.46, steel = [], red = [], cable = [];
-    steel.push(boxAt(BRIDGE_W, 0.025, L + BRIDGE_PAD * 2, 0, -0.0125, L / 2));
-    [-1, 1].forEach((side) => steel.push(boxAt(0.02, 0.05, L + BRIDGE_PAD * 2, side * (BRIDGE_W / 2 - 0.01), 0.01, L / 2)));
-    [0.04, L - 0.04].forEach((z) => {
-      [-1, 1].forEach((side) => red.push(boxAt(0.035, TOWER, 0.035, side * 0.19, TOWER / 2 - 0.03, z)));
-      red.push(boxAt(0.42, 0.035, 0.04, 0, TOWER - 0.03, z), boxAt(0.42, 0.025, 0.035, 0, TOWER * 0.55, z));
-    });
-    [-1, 1].forEach((side) => {
-      const x = side * 0.19, top = TOWER - 0.05, low = 0.1;
-      const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(x, top, 0.04), new THREE.Vector3(x, 2 * low - top, L / 2), new THREE.Vector3(x, top, L - 0.04));
-      cable.push(new THREE.TubeGeometry(curve, 24, 0.008, 5, false));
-      // Back stays from each tower top down to the deck end
-      cable.push(rodBetween(new THREE.Vector3(x, top, 0.04), new THREE.Vector3(x, 0.02, -BRIDGE_PAD + 0.02), 0.006));
-      cable.push(rodBetween(new THREE.Vector3(x, top, L - 0.04), new THREE.Vector3(x, 0.02, L + BRIDGE_PAD - 0.02), 0.006));
-      for (let k = 1; k < 8; k++) {
-        const p = curve.getPoint(k / 8);
-        if (p.y > 0.06) cable.push(rodBetween(new THREE.Vector3(x, 0.03, p.z), p, 0.003));
-      }
-    });
-    // TubeGeometry is indexed with the same attributes as the rods, so all of them merge
-    return [[mergeGeometries(steel), '#9aa3ad'], [mergeGeometries(red), '#d94f3d'], [mergeGeometries(cable), '#3a3f47']];
-  })(),
-  // Stone arch: a solid stone body with an arched opening underneath, a paved deck and low parapets
-  arch: (() => {
-    const L = BRIDGE_L, BODY = 0.24, shape = new THREE.Shape();
-    shape.moveTo(-BRIDGE_PAD, 0);
-    shape.lineTo(L + BRIDGE_PAD, 0);
-    shape.lineTo(L + BRIDGE_PAD, -BODY);
-    shape.lineTo(L - 0.05, -BODY);
-    shape.absellipse(L / 2, -BODY, L / 2 - 0.05, BODY * 0.72, 0, Math.PI, false);
-    shape.lineTo(-BRIDGE_PAD, -BODY);
-    shape.lineTo(-BRIDGE_PAD, 0);
-    // Shape x runs along the bridge: extrude across the width, then turn x onto z
-    const stone = new THREE.ExtrudeGeometry(shape, { depth: BRIDGE_W - 0.02, bevelEnabled: false, curveSegments: 16 })
-      .translate(0, 0, -(BRIDGE_W - 0.02) / 2).rotateY(-Math.PI / 2); // already non-indexed, like the boxes
-    const deck = [boxAt(BRIDGE_W - 0.04, 0.012, L + BRIDGE_PAD * 2, 0, 0.006, L / 2)];
-    const wall = [-1, 1].map((side) => boxAt(0.035, 0.07, L + BRIDGE_PAD * 2 - 0.06, side * (BRIDGE_W / 2 - 0.0175), 0.035, L / 2));
-    return [[stone, '#b9b2a6'], [mergeGeometries(deck), '#9a9488'], [mergeGeometries(wall), '#d8d1c3']];
-  })(),
-};
-const KIND_ORDER = ['wood', 'suspension', 'arch'];
-const pairKind = new Map();
-const bridges = bridgePairs.map(([a, b]) => {
-  const key = [a.island, b.island].sort((x, y) => x - y).join('-');
-  if (!pairKind.has(key)) pairKind.set(key, KIND_ORDER[pairKind.size % KIND_ORDER.length]);
-  const group = new THREE.Group();
-  BRIDGE_KINDS[pairKind.get(key)].forEach(([geo, color]) => {
-    const m = new THREE.Mesh(geo, mat(color));
-    m.castShadow = m.receiveShadow = true;
-    group.add(m);
-  });
-  scene.add(group);
-  return { group, a, b };
-});
-const endA = new THREE.Vector3(), endB = new THREE.Vector3();
-function updateBridges() {
-  bridges.forEach(({ group, a, b }) => {
-    endA.set(a.lanes.bridge.x, islands[a.island].position.y + PATH_TOP, a.lanes.bridge.z);
-    endB.set(b.lanes.bridge.x, islands[b.island].position.y + PATH_TOP, b.lanes.bridge.z);
-    group.position.copy(endA);
-    group.lookAt(endB); // +z toward the far end
-    group.scale.z = endA.distanceTo(endB) / BRIDGE_L;
-  });
-}
-
 function updatePersonLabels() {
-  people.forEach((w) => placeLabel(w.label, labelPos.copy(w.g.position).setY(w.g.position.y + (w.ride ? 1.25 : 1))));
+  people.forEach((w) => placeLabel(w.label, labelPos.copy(w.g.position).setY(w.g.position.y + (w.ride ? 0.85 : 0.7))));
 }
 
 // ---------- Camera fly ----------
@@ -2946,7 +2801,7 @@ const HOME_TARGET = new THREE.Vector3(0, 0, 0);
 const homeOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 92, 48) : new THREE.Vector3(0, 33, 36));
 // The policy islands filling the screen
 const ISLANDS_TARGET = new THREE.Vector3(0, 0, 0);
-const islandsOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 60, 44) : new THREE.Vector3(0, 23, 23));
+const islandsOffset = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 68, 50) : new THREE.Vector3(0, 23, 23));
 // On phones the bottom rail covers the lower part of the screen, so the ring is aimed a little south to sit above it
 const islandsTarget = () => (camera.aspect < 0.8 ? new THREE.Vector3(0, 0, 2.6) : ISLANDS_TARGET.clone());
 let fly = null;
@@ -3102,7 +2957,7 @@ function select(i) {
   openCard();
   islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
   applyDim();
-  focusOn(islands[i].position, CONTENT_SCALE);
+  focusOn(islands[i].position);
   setHash(`policy/${p.short}`, p.short);
   track('view_policy', { policy_name: p.short, policy_group: grp.name });
   markVisited(i);
@@ -3263,19 +3118,29 @@ legendEl.addEventListener('click', (e) => {
   setTab('mine');
 });
 
-// ---------- Guided tour: fly island to island with each policy's key point ----------
-// Time on each island follows how much there is to read (about 8 characters a second), within 7–15 s
+// ---------- The run: first person along the course, stopping at each aid station for its policy card ----------
+// 開始！ puts the camera at a runner's eye height on the start line. It runs the course, eases to a stop beside each
+// station, turns to face it while the card is up, then carries on, until it crosses the finish line.
+// Time at each station follows how much there is to read (about 8 characters a second), within 7–15 s
 const tourStay = (pos) => {
   const p = POLICIES[COURSE[pos]], key = keyPointOf(p);
   const chars = p.summary.length + key.length + p.items.filter((t) => t !== key).slice(0, 3).join('').length;
   return Math.min(15, Math.max(7, chars / 8));
 };
+const RUN_SPEED_CAM = 2.6, RUN_EYE = 0.55, STOP_EYE = 1.2, RUN_FOV = 62, STOP_BEFORE = 1.6;
 const tourEl = document.getElementById('tour');
-let tour = null; // { i, left, paused }
+let tour = null; // { s, next, mode: 'run' | 'stop', left, paused, look }
+const runEye = new THREE.Vector3(), runLook = new THREE.Vector3(), runAim = new THREE.Vector3();
+const stopAt = (pos) => stationS(pos) - STOP_BEFORE;
+function runHud() {
+  const km = Math.min(KM_FULL, (tour.s / COURSE_LEN) * KM_FULL);
+  const next = tour.next < COURSE.length ? `下一站 KM ${(tour.next + 1) * 3} ${POLICIES[COURSE[tour.next]].short}` : '衝向終點';
+  document.getElementById('tour-step').textContent = `🏃 KM ${km.toFixed(1)} · ${next}`;
+}
 function tourShow(pos) {
   const i = COURSE[pos], p = POLICIES[i];
   const grp = GROUPS[p.group], key = keyPointOf(p);
-  document.getElementById('tour-step').textContent = `跑一趟全馬 · 第 ${pos + 1} 站 KM ${kmOf(i)}`;
+  document.getElementById('tour-step').textContent = `補給站 KM ${kmOf(i)} · 第 ${pos + 1} / ${COURSE.length} 站`;
   const tag = document.getElementById('tour-tag');
   tag.innerHTML = `${groupIcon(p.group)}${grp.name}`;
   tag.style.background = readableBg(grp.color);
@@ -3283,59 +3148,110 @@ function tourShow(pos) {
   document.getElementById('tour-summary').textContent = p.summary;
   document.getElementById('tour-text').textContent = key;
   document.getElementById('tour-items').innerHTML = p.items.filter((t) => t !== key).slice(0, 3).map((t) => `<li>${esc(t)}</li>`).join('');
-  islands.forEach((g, k) => { g.userData.liftGoal = k === i ? 0.5 : 0; });
-  labels.forEach((el, k) => el.classList.toggle('active', k === i));
-  const offset = (camera.aspect < 0.8 ? new THREE.Vector3(0, 9, 12) : new THREE.Vector3(5, 7, 9)).multiplyScalar(CONTENT_SCALE);
-  const target = islands[i].position.clone().add(new THREE.Vector3(0, 1, 0));
-  if (camera.aspect < 0.8) target.add(new THREE.Vector3(0, -2.4, 2.4)); // the caption takes the lower half on phones
-  flyTo(target, offset);
+  document.getElementById('tour-bar').style.width = '0%';
+  tourEl.classList.remove('running');
   markVisited(i);
   islands[i].userData.content.userData.eggAt = performance.now() / 1000;
+}
+function setRunning() {
+  tour.mode = 'run';
+  tourEl.classList.add('running');
+  runHud();
+}
+// Stop at a station: from a jump (prev/next) the camera lands there straight away
+function tourGo(pos, jump = true) {
+  if (!tour) return;
+  tour.next = Math.max(0, Math.min(COURSE.length - 1, pos));
+  if (jump) tour.s = stopAt(tour.next);
+  tour.mode = 'stop';
+  tour.left = tourStay(tour.next);
+  tourShow(tour.next);
 }
 function startTour(from = 0) {
   stopFollow();
   if (!card.hidden) deselect();
   if (!indexEl.hidden) toggleIndex(false);
   toggleMenu(false);
-  tour = { i: from, left: tourStay(from), paused: false };
+  fly = null;
+  tour = { s: 0, next: 0, mode: 'run', left: 0, paused: false };
   tourEl.hidden = false;
-  document.body.classList.add('touring');
+  document.body.classList.add('touring', 'running');
   document.getElementById('tour-pause').textContent = '暫停';
-  tourShow(from);
+  controls.enabled = false;
+  camera.fov = RUN_FOV;
+  camera.updateProjectionMatrix();
+  // Start on the line, looking down the course
+  const p = courseAt(0), ahead = courseAt(2);
+  runEye.set(p.x, RUN_EYE, p.z);
+  runLook.set(ahead.x, RUN_EYE * 0.8, ahead.z);
+  camera.position.copy(runEye);
+  camera.lookAt(runLook);
+  if (from) tourGo(from);
+  else setRunning();
   track('tour_start');
 }
 function endTour(done = false, flyHome = true) {
   if (!tour) return;
   tour = null;
   tourEl.hidden = true;
-  document.body.classList.remove('touring');
-  islands.forEach((g) => { g.userData.liftGoal = 0; });
-  labels.forEach((el) => el.classList.remove('active'));
+  tourEl.classList.remove('running');
+  document.body.classList.remove('touring', 'running');
+  camera.fov = 40;
+  camera.updateProjectionMatrix();
+  // Hand the camera back to the orbit controls where the run left it
+  controls.target.copy(runLook);
+  controls.enabled = true;
   if (flyHome) flyTo(islandsTarget(), islandsOffset());
   if (done) {
     track('tour_complete');
-    showToast('跑完全馬了！點任何一座島可以看詳細內容', 6000);
+    showToast(`完賽！${KM_FULL} 公里跑完了，點任何一個補給站可以看詳細內容`, 7000);
   }
 }
 function updateTour(dt) {
-  if (!tour || tour.paused) return;
-  tour.left -= dt;
-  document.getElementById('tour-bar').style.width = `${(1 - tour.left / tourStay(tour.i)) * 100}%`;
-  if (tour.left > 0) return;
-  if (tour.i + 1 >= POLICIES.length) return endTour(true);
-  tourGo(tour.i + 1);
-}
-function tourGo(i) {
   if (!tour) return;
-  tour.i = Math.max(0, Math.min(POLICIES.length - 1, i));
-  tour.left = tourStay(tour.i);
-  document.getElementById('tour-bar').style.width = '0%';
-  tourShow(tour.i);
+  if (!tour.paused) {
+    if (tour.mode === 'run') {
+      const goal = tour.next < COURSE.length ? stopAt(tour.next) : COURSE_LEN + 1.2; // past the finish arch
+      // Ease into each stop over the last stretch
+      const speed = RUN_SPEED_CAM * Math.min(1, 0.25 + (goal - tour.s) / 1.5);
+      tour.s = reduced ? goal : Math.min(goal, tour.s + dt * speed);
+      runHud();
+      if (tour.s >= goal) {
+        if (tour.next < COURSE.length) tourGo(tour.next, false);
+        else return endTour(true);
+      }
+    } else {
+      tour.left -= dt;
+      document.getElementById('tour-bar').style.width = `${(1 - tour.left / tourStay(tour.next)) * 100}%`;
+      if (tour.left <= 0) {
+        tour.next++;
+        setRunning();
+      }
+    }
+  }
+  // Camera: eye height a little right of the middle of the road, looking a little way ahead. At a stop it pulls up
+  // short of the station on the far side of the road, stands a little taller and turns to face it over the tent.
+  const p = courseAt(tour.s), ahead = courseAt(tour.s + 2.2), stopping = tour.mode === 'stop';
+  const lane = stopping ? -stationSpots[tour.next].side * 0.2 : 0.1; // positive: right of the running direction
+  const bob = !stopping && !tour.paused && !reduced ? Math.abs(Math.sin(tour.s * 6)) * 0.02 : 0;
+  runEye.set(p.x - p.dz * lane, (stopping ? STOP_EYE : RUN_EYE) + bob, p.z + p.dx * lane);
+  if (stopping) {
+    const g = islands[COURSE[tour.next]];
+    runAim.set(g.position.x, 0.6, g.position.z);
+  } else runAim.set(ahead.x, RUN_EYE * 0.8, ahead.z);
+  const k = reduced ? 1 : Math.min(1, dt * 4);
+  camera.position.lerp(runEye, k);
+  runLook.lerp(runAim, reduced ? 1 : Math.min(1, dt * (stopping ? 2.5 : 5)));
+  camera.lookAt(runLook);
 }
-document.getElementById('tour-prev').addEventListener('click', () => tourGo(tour.i - 1));
+document.getElementById('tour-prev').addEventListener('click', () => tourGo(tour.next - 1)); // running: the station just passed
 document.getElementById('tour-next').addEventListener('click', () => {
-  if (tour.i + 1 >= POLICIES.length) endTour(true);
-  else tourGo(tour.i + 1);
+  if (tour.mode === 'run') return tourGo(tour.next);
+  if (tour.next + 1 >= COURSE.length) {
+    tour.next = COURSE.length;
+    return setRunning(); // run in to the finish
+  }
+  tourGo(tour.next + 1);
 });
 function pauseTour(paused) {
   if (!tour) return;
@@ -3345,7 +3261,7 @@ function pauseTour(paused) {
 document.getElementById('tour-pause').addEventListener('click', () => pauseTour(!tour?.paused));
 document.getElementById('tour-end').addEventListener('click', () => endTour());
 document.getElementById('tour-open').addEventListener('click', () => {
-  const i = tour ? COURSE[tour.i] : undefined;
+  const i = tour && tour.mode === 'stop' ? COURSE[tour.next] : undefined;
   endTour(false, false);
   if (i !== undefined) select(i);
 });
@@ -4218,7 +4134,7 @@ function renderMine() {
         <input data-islander-name maxlength="10" placeholder="可留空" value="${esc(store.get('islanderName'))}"></label>` : ''}
       <div class="acts">${n === total
         ? '<button type="button" class="primary" data-act="complete-card">領取完賽證書</button>'
-        : `<button type="button" class="primary" data-act="tour">跑一趟全馬（還差 ${total - n} 站）</button>`}
+        : `<button type="button" class="primary" data-act="tour">▶ 開始！（還差 ${total - n} 站）</button>`}
         ${quizEnabled ? '<button type="button" data-act="quiz">政見小測驗</button>' : ''}</div>
     </li>
     <li class="mine-sub">我標記為重要的（${marked.length}）</li>`
@@ -5329,7 +5245,6 @@ renderer.setAnimationLoop(() => {
     u.lift += (goal - u.lift) * Math.min(1, dt * 8);
     g.position.y = u.lift + (reduced ? 0 : Math.sin(t * 0.8 + i * 1.3) * 0.06);
   });
-  updateBridges();
   people.forEach((w) => stepPerson(w, reduced ? 0 : sceneDt));
   updateFollow(dt);
   updateTour(dt);
@@ -5338,13 +5253,15 @@ renderer.setAnimationLoop(() => {
     const c = g.userData.content, egg = performance.now() / 1000 - (c.userData.eggAt ?? -99);
     c.scale.y = !reduced && egg < 1.2 ? 1 + Math.sin(egg * 14) * 0.08 * Math.exp(-egg * 4) : 1;
   });
-  if (fly) {
-    const k = Math.min(1, dt * 3);
-    controls.target.lerp(fly.target, k);
-    camera.position.lerp(fly.pos, k);
-    if (camera.position.distanceTo(fly.pos) < 0.05) fly = null;
+  if (!tour) { // the run moves the camera itself
+    if (fly) {
+      const k = Math.min(1, dt * 3);
+      controls.target.lerp(fly.target, k);
+      camera.position.lerp(fly.pos, k);
+      if (camera.position.distanceTo(fly.pos) < 0.05) fly = null;
+    }
+    controls.update();
   }
-  controls.update();
   const viewDist = camera.position.distanceTo(controls.target);
   scene.fog.near = viewDist + 15;
   scene.fog.far = viewDist + 110;
